@@ -1,0 +1,76 @@
+[versions]
+kotlin = "2.2.21"
+kotlinx-coroutines = "1.10.2"
+ksoup = "0.6.0"
+kotlin-logging = "7.0.7"
+slf4j = "2.0.7"
+okio = "3.16.0"
+kotest = "6.0.3"
+kotest-bdd = "2.1.3"
+kotlin-gen = "1.0.2"
+ksp = "2.2.20-2.0.3"
+ktor = "3.3.0"
+javalin = "6.0.0"
+http4k = "5.37.0.0"
+maven = "3.9.0"
+maven-plugin-tools = "3.9.0"
+spring = "6.2.11"
+spring-boot = "3.4.1"
+jakarta-servlet = "6.0.0"
+kotlinx-browser = "0.5.0"
+mockk = "1.14.6"
+vanniktechMavenPublish = "0.34.0"
+dokka = "2.1.0"
+gradle-publish = "2.0.0"
+ktml = "0.1.9"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+ksoup-html = { module = "com.mohamedrejeb.ksoup:ksoup-html", version.ref = "ksoup" }
+ksoup-entities = { module = "com.mohamedrejeb.ksoup:ksoup-entities", version.ref = "ksoup" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlin-logging" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+ktool-kotest-bdd = { module = "dev.ktool:kotest-bdd", version.ref = "kotest-bdd" }
+ktool-kotlin-gen = { module = "dev.ktool:kotlin-gen", version.ref = "kotlin-gen" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-status = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+http4k-core = { module = "org.http4k:http4k-core", version.ref = "http4k" }
+http4k-server-jetty = { module = "org.http4k:http4k-server-jetty", version.ref = "http4k" }
+maven-plugin-api = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven" }
+maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven" }
+maven-plugin-annotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version.ref = "maven-plugin-tools" }
+spring-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "spring" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
+spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure", version.ref = "spring-boot" }
+jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+# For the example applications
+ktml-runtime = { module = "dev.ktml:ktml-runtime", version.ref = "ktml" }
+ktml-dev-mode = { module = "dev.ktml:ktml-dev-mode", version.ref = "ktml" }
+ktml-http4k = { module = "dev.ktml:ktml-http4k", version.ref = "ktml" }
+ktml-ktor = { module = "dev.ktml:ktml-ktor", version.ref = "ktml" }
+ktml-spring = { module = "dev.ktml:ktml-spring", version.ref = "ktml" }
+ktml-javalin = { module = "dev.ktml:ktml-javalin", version.ref = "ktml" }
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotest = { id = "io.kotest", version.ref = "kotest" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
+gradle-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-publish" }
+ktml = { id = "dev.ktml.gradle", version.ref = "ktml" }
