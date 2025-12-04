@@ -1,15 +1,12 @@
-@file:OptIn(ExperimentalWasmDsl::class)
-
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotest)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.vanniktech.mavenPublish)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 repositories {
@@ -33,13 +30,17 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     linuxX64()
+    mingwX64()
     macosX64()
     macosArm64()
-    mingwX64()
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":runtime"))
             implementation(libs.okio)
+            implementation(libs.kotlin.logging)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.ktool.kotlin.gen)
         }
 
         commonTest.dependencies {
@@ -49,16 +50,19 @@ kotlin {
             implementation(libs.kotest.framework.engine)
             implementation(libs.kotest.assertions.core)
             implementation(libs.ktool.kotest.bdd)
-            implementation(libs.okio.fakefilesystem)
         }
 
         jvmTest.dependencies {
             implementation(libs.kotest.runner.junit5)
         }
+
+        nativeMain.dependencies {
+            implementation(libs.okio)
+        }
     }
 }
 
-description = "Core Runtime Library for KtEmbed"
+description = "Generates Kotlin code from assets files"
 
 val javadocJar by tasks.registering(Jar::class) {
     dependsOn(tasks.dokkaGeneratePublicationHtml)

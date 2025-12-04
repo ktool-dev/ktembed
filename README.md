@@ -20,11 +20,11 @@ KtEmbed is a Kotlin Multiplatform library + Gradle plugin that lets you embed st
 // build.gradle.kts
 plugins {
     kotlin("multiplatform") version "2.2.21"
-    id("dev.ktool.ktembed") version "1.0.0"
+    id("dev.ktool.embed version "1.0.0"
 }
 
 dependencies {
-    commonMainImplementation("dev.ktool:ktembed-runtime:1.0.0")
+    commonMainImplementation("dev.ktool:embed-runtime:1.0.0")
 }
 ```
 
@@ -66,7 +66,7 @@ ktEmbed {
     packageName.set("embedded")
     
     // Output directory for generated sources
-    outputDir.set(layout.buildDirectory.dir("generated/ktembed"))
+    outputDir.set(layout.buildDirectory.dir("generated/embed"))
     
     // Maximum resources per generated file (0 = no sharding)
     shardSize.set(50)
