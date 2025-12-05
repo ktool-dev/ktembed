@@ -3,7 +3,7 @@ package dev.ktool.embed
 import okio.*
 import okio.ByteString.Companion.decodeBase64
 
-internal const val RESOURCE_CHUNK_SIZE = 60_000
+const val RESOURCE_CHUNK_SIZE = 60_000L
 internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
 
 /**
@@ -12,7 +12,7 @@ internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
  *
  * @return 64-character hexadecimal SHA-256 hash
  */
-internal fun computeHash(chunks: List<String>): String {
+fun computeHash(chunks: List<String>): String {
     val hashingSink = HashingSink.sha256(blackholeSink())
     hashingSink.buffer().use { buffer ->
         chunks.forEach { it.decodeBase64()?.also(buffer::write) }

@@ -7,7 +7,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import okio.ByteString.Companion.encodeUtf8
 
-class EmbeddedResourceSpec : BddSpec({
+class ResourceSpec : BddSpec({
     "creating resource with single chunk" {
         Given
         val content = "Hello, World!"
@@ -16,12 +16,10 @@ class EmbeddedResourceSpec : BddSpec({
         When
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "greeting.txt",
             key = "greeting.txt"
         )
 
         Then
-        resource.path shouldBe "greeting.txt"
         resource.key shouldBe "greeting.txt"
         resource.chunks.size shouldBe 1
     }
@@ -40,13 +38,11 @@ class EmbeddedResourceSpec : BddSpec({
         When
         val resource = Resource(
             chunks = base64Chunks,
-            path = "multipart.txt",
             key = "multipart.txt"
         )
 
         Then
         resource.chunks.size shouldBe 3
-        resource.path shouldBe "multipart.txt"
         resource.key shouldBe "multipart.txt"
     }
 
@@ -56,7 +52,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "test.txt",
             key = "test.txt"
         )
 
@@ -74,7 +69,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "binary.bin",
             key = "binary.bin"
         )
 
@@ -91,7 +85,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunks = createBase64Chunks(fullContent, 3)
         val resource = Resource(
             chunks = base64Chunks,
-            path = "multi.txt",
             key = "multi.txt"
         )
 
@@ -109,7 +102,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunks = createBase64Chunks(fullContent, 3)
         val resource = Resource(
             chunks = base64Chunks,
-            path = "parts.bin",
             key = "parts.bin"
         )
 
@@ -126,7 +118,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "small.txt",
             key = "small.txt"
         )
 
@@ -150,7 +141,6 @@ class EmbeddedResourceSpec : BddSpec({
         )
         val resource = Resource(
             chunks = base64Chunks,
-            path = "sized.txt",
             key = "sized.txt"
         )
 
@@ -173,7 +163,6 @@ class EmbeddedResourceSpec : BddSpec({
         )
         val resource = Resource(
             chunks = base64Chunks,
-            path = "test.txt",
             key = "test.txt"
         )
 
@@ -191,7 +180,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "lazy.txt",
             key = "lazy.txt"
         )
 
@@ -212,7 +200,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "lazy.bin",
             key = "lazy.bin"
         )
 
@@ -233,7 +220,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = emptyContent.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "empty.txt",
             key = "empty.txt"
         )
 
@@ -252,7 +238,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = unicodeContent.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "unicode.txt",
             key = "unicode.txt"
         )
 
@@ -272,7 +257,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = specialContent.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "special.txt",
             key = "special.txt"
         )
 
@@ -289,7 +273,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = largeContent.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "large.txt",
             key = "large.txt"
         )
 
@@ -307,7 +290,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunks = createBase64Chunks(fullContent, 3)
         val resource = Resource(
             chunks = base64Chunks,
-            path = "huge.txt",
             key = "huge.txt"
         )
 
@@ -325,12 +307,10 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource1 = Resource(
             chunks = listOf(base64Chunk),
-            path = "file.txt",
             key = "file.txt"
         )
         val resource2 = Resource(
             chunks = listOf(base64Chunk),
-            path = "file.txt",
             key = "file.txt"
         )
 
@@ -342,18 +322,16 @@ class EmbeddedResourceSpec : BddSpec({
         resource1.hashCode() shouldBe resource2.hashCode()
     }
 
-    "data class inequality with different paths" {
+    "data class inequality with different keys" {
         Given
         val content = "Same content"
         val base64Chunk = content.encodeUtf8().base64()
         val resource1 = Resource(
             chunks = listOf(base64Chunk),
-            path = "file1.txt",
             key = "file1.txt"
         )
         val resource2 = Resource(
             chunks = listOf(base64Chunk),
-            path = "file2.txt",
             key = "file2.txt"
         )
 
@@ -370,12 +348,10 @@ class EmbeddedResourceSpec : BddSpec({
         val content2 = "Second content"
         val resource1 = Resource(
             chunks = listOf(content1.encodeUtf8().base64()),
-            path = "file.txt",
             key = "file.txt"
         )
         val resource2 = Resource(
             chunks = listOf(content2.encodeUtf8().base64()),
-            path = "file.txt",
             key = "file.txt"
         )
 
@@ -390,21 +366,19 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val original = Resource(
             chunks = listOf("content".encodeUtf8().base64()),
-            path = "original.txt",
             key = "original.txt"
         )
 
         When
-        val copied = original.copy(path = "copied.txt")
+        val copied = original.copy(key = "copied.txt")
 
         Then
-        copied.path shouldBe "copied.txt"
-        copied.key shouldBe original.key
+        copied.key shouldBe "copied.txt"
         copied.chunks shouldBe original.chunks
         copied shouldNotBe original
     }
 
-    "path and key can be different" {
+    "resource key is preserved" {
         Given
         val content = "Test content"
         val base64Chunk = content.encodeUtf8().base64()
@@ -412,14 +386,11 @@ class EmbeddedResourceSpec : BddSpec({
         When
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "path/to/file.txt",
             key = "unique-key-123"
         )
 
         Then
-        resource.path shouldBe "path/to/file.txt"
         resource.key shouldBe "unique-key-123"
-        resource.path shouldNotBe resource.key
     }
 
     "asString and asBytes represent same content" {
@@ -428,7 +399,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
-            path = "consistent.txt",
             key = "consistent.txt"
         )
 
@@ -453,7 +423,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunks = createBase64Chunks(content, numChunks)
         val resource = Resource(
             chunks = base64Chunks,
-            path = "test.txt",
             key = "test.txt"
         )
 
@@ -474,7 +443,6 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunks = createBase64Chunks(content, targetChunkCount)
         val resource = Resource(
             chunks = base64Chunks,
-            path = "test.txt",
             key = "test.txt"
         )
 
