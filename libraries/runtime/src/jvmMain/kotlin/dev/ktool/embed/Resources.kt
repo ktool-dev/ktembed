@@ -16,7 +16,7 @@ import java.io.OutputStream
  */
 class Resources(
     private val resourceDirectory: ResourceDirectory,
-    private val inMemoryCutoff: Int = IN_MEMORY_CUT_OFF,
+    private val inMemoryCutoff: Long = IN_MEMORY_CUT_OFF,
 ) : BaseResources(
     resourceDirectory,
     inMemoryCutoff,

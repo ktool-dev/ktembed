@@ -214,7 +214,7 @@ class InternalResourcesSpec : BddSpec({
             chunk2.encodeUtf8().base64(),
             chunk3.encodeUtf8().base64()
         )
-        val resource = Resource(chunks, "chunked.txt", "chunked.txt")
+        val resource = Resource("chunked.txt", chunks)
         val resourceDir = TestResourceDirectory("test-dir", mapOf("chunked.txt" to resource))
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
         val output = Buffer()
@@ -389,7 +389,7 @@ class InternalResourcesSpec : BddSpec({
             chunk2.encodeUtf8().base64(),
             chunk3.encodeUtf8().base64()
         )
-        val resource = Resource(chunks, "multi.txt", "multi.txt")
+        val resource = Resource("multi.txt", chunks)
         val resourceDir = TestResourceDirectory("test-dir", mapOf("multi.txt" to resource))
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
@@ -512,7 +512,7 @@ class InternalResourcesSpec : BddSpec({
 private fun createTestResourceDirectory(key: String, contentMap: Map<String, String>): ResourceDirectory {
     val resources = contentMap.mapValues { (path, content) ->
         val base64Content = content.encodeUtf8().base64()
-        Resource(listOf(base64Content), path, path)
+        Resource(path, listOf(base64Content))
     }
     return TestResourceDirectory(key, resources)
 }
@@ -523,7 +523,7 @@ private fun createTestResourceDirectory(key: String, contentMap: Map<String, Str
 private fun createResourcesWithFakeFileSystem(
     resourceDir: ResourceDirectory,
     fileSystem: FakeFileSystem,
-    inMemoryCutoff: Int = IN_MEMORY_CUT_OFF
+    inMemoryCutoff: Long = IN_MEMORY_CUT_OFF
 ): BaseResources {
     return BaseResources(
         resourceDirectory = resourceDir,

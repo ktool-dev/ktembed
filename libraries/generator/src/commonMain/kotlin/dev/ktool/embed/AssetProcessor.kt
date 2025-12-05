@@ -1,144 +1,157 @@
 package dev.ktool.embed
 
-import dev.ktool.gen.types.*
+import dev.ktool.gen.types.ExpressionBody
+import dev.ktool.gen.types.KotlinFile
+import dev.ktool.gen.types.Property
 import okio.FileSystem
 import okio.Path
-import okio.Path.Companion.toPath
 import okio.SYSTEM
+
+private const val MAX_CHUNKS_PER_KOTLIN_FILE = 100
 
 /**
  * Processes asset files from directories and generates Kotlin code that implements ResourceDirectory.
  *
  * This class scans directories for resource files, encodes them as Base64 chunks, and generates
- * a Kotlin class that contains all resources as embedded data.
+ * multiple Kotlin files: one ResourceDirectory class and multiple ResourcesN.kt files containing
+ * the Base64-encoded chunks. This approach prevents large files from being loaded into memory
+ * and avoids generating overly large class files.
  *
  * @property fileSystem The file system to use for reading files (defaults to SYSTEM)
  */
 class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
-    /**
-     * Processes a list of directories and generates a ResourceDirectory implementation.
-     *
-     * @param directories List of directory paths to scan for resources
-     * @param packageName The package name for the generated class
-     * @return A KotlinFile containing the generated code
-     */
-    fun process(directories: List<String>, packageName: String): KotlinFile =
-        genResourceDirectory(packageName, directories.flatMap { scanDirectory(it.toPath()) })
+    private val resourceDirectoryGenerator = ResourceDirectoryGenerator(fileSystem)
 
     /**
-     * Scans a directory recursively and collects all files as ResourceData.
+     * Processes a list of directories and generates a ResourceDirectory implementation plus ResourceChunk files.
+     *
+     * @param directories List of directory paths to scan for resources
+     * @param packageName The package name for the generated classes
+     * @param baseOutputDir The base directory to write the generated Kotlin code into
+     * @param ignore A filter that will be called for all paths and the path ignored if it returns true
+     */
+    fun process(
+        directories: List<Path>,
+        packageName: String,
+        baseOutputDir: Path,
+        ignore: (Path) -> Boolean = { true },
+    ) {
+        val filePaths = directories.flatMap { scanDirectoryForPaths(path = it, ignore = ignore) }
+        val resourceMappings = generateResourceFiles(packageName, filePaths, baseOutputDir)
+        val resourceDirectoryFile = resourceDirectoryGenerator.generate(packageName, resourceMappings)
+        resourceDirectoryFile.write(baseOutputDir, "ResourceDirectory")
+    }
+
+    /**
+     * Scans a directory recursively and collects all file paths (without reading content).
      *
      * @param path The directory path to scan
      * @param baseDir The base directory for computing relative paths (defaults to directory)
-     * @return List of ResourceData objects representing all files found
+     * @return List of FilePathInfo objects containing path metadata
      */
-    private fun scanDirectory(path: Path, baseDir: Path = path): List<ResourceData> {
+    private fun scanDirectoryForPaths(path: Path, baseDir: Path = path, ignore: (Path) -> Boolean): List<FilePathInfo> {
         if (!path.exists || !path.isDirectory) return listOf()
 
         return buildList {
             path.list().forEach {
                 when {
-                    it.isDirectory -> addAll(scanDirectory(it, baseDir))
-                    else -> add(createResourceData(path, baseDir))
+                    ignore(it) -> Unit
+                    it.isDirectory -> addAll(scanDirectoryForPaths(it, baseDir, ignore))
+                    else -> {
+                        val relativePath = it.normalized().toString()
+                            .removePrefix(baseDir.normalized().toString())
+                            .trimStart('/')
+
+                        val key = relativePath.replace("/", "_").replace("\\", "_").replace(".", "_")
+
+                        add(FilePathInfo(absolutePath = it, relativePath = relativePath, key = key))
+                    }
                 }
             }
         }
     }
 
     /**
-     * Creates ResourceData from a file.
+     * Generates all Kotlin files: ResourceDirectory + ResourcesN files.
+     * Processes files one at a time to minimize memory usage.
      *
-     * @param filePath The path to the file
-     * @param baseDir The base directory for computing the relative path
-     * @return ResourceData containing the file's encoded chunks and metadata
+     * @param packageName The package name for the generated classes
+     * @param filePaths List of file paths to process
+     * @return List of generated KotlinFiles
      */
-    private fun createResourceData(filePath: Path, baseDir: Path): ResourceData {
-        val relativePath = filePath.normalized().toString()
-            .removePrefix(baseDir.normalized().toString())
-            .trimStart('/')
+    private fun generateResourceFiles(
+        packageName: String,
+        filePaths: List<FilePathInfo>,
+        baseOutputDir: Path
+    ): List<ResourceMapping> {
+        val kotlinFile = KotlinFile(packageName)
+        var fileCounter = 0
+        var chunkCount = 0
 
-        val key = relativePath.replace("/", "_").replace("\\", "_")
+        fun writeFile() {
+            if (chunkCount > 0) {
+                kotlinFile.write(baseOutputDir, "ResourceChunks${++fileCounter}")
+                kotlinFile.members.clear()
+            }
+            chunkCount = 0
+        }
 
-        val chunks = buildList {
-            fileSystem.read(filePath) {
-                while (!exhausted()) {
-                    add(readByteString(RESOURCE_CHUNK_SIZE).base64())
+        return buildList {
+            filePaths.forEach { fileInfo ->
+                val chunkVariableName = "RESOURCE_${size + 1}"
+
+                kotlinFile.members += Property(chunkVariableName) {
+                    initializer = ExpressionBody {
+                        write("listOf(")
+                        withIndent {
+                            fileSystem.read(fileInfo.absolutePath) {
+                                while (!exhausted()) {
+                                    val chunk = readByteString(minOf(RESOURCE_CHUNK_SIZE, buffer.size)).base64()
+                                    newLine(""""$chunk",""")
+                                    chunkCount++
+                                }
+                            }
+                        }
+                        newLine(")")
+                    }
+                }
+
+                add(ResourceMapping(fileInfo.relativePath, chunkVariableName, fileInfo.key))
+
+                if (chunkCount > MAX_CHUNKS_PER_KOTLIN_FILE) {
+                    writeFile()
                 }
             }
-        }
 
-        return ResourceData(path = relativePath, chunks = chunks, key = key)
-    }
-
-    /**
-     * Generates a KotlinFile containing a ResourceDirectory implementation.
-     *
-     * @param packageName The package name for the generated class
-     * @param resources List of resources to include in the generated class
-     * @return A KotlinFile with the complete implementation
-     */
-    private fun genResourceDirectory(packageName: String, resources: List<ResourceData>) = KotlinFile(packageName) {
-        +Import("dev.ktool.embed.Resource")
-        +Import("dev.ktool.embed.ResourceDirectory")
-
-        +Class("ResourceDirectory") {
-            +SuperType("ResourceDirectory")
-
-            +Property("key", type = StringType, modifiers = listOf(Modifier.Override)) {
-                initializer = ExpressionBody("\"${packageName.replace('.', '_')}\"")
-            }
-
-            +Property(
-                "resources",
-                type = Type("Map", typeArguments = listOf(TypeArgument("String"), TypeArgument("Resource"))),
-                modifiers = listOf(Modifier.Private)
-            ) {
-                initializer = ExpressionBody(buildResourcesMapInitializer(resources))
-            }
-
-            +Function("get", returnType = Type("Resource?")) {
-                +Modifier.Override
-                +Modifier.Operator
-                +Parameter("path", StringType)
-                body = ExpressionBody("resources[path]")
-            }
+            writeFile()
         }
     }
 
-    /**
-     * Builds the initializer for the resource map.
-     *
-     * @param resources List of resources to include
-     * @return String containing the Kotlin code for the map initializer
-     */
-    private fun buildResourcesMapInitializer(resources: List<ResourceData>): String {
-        if (resources.isEmpty()) {
-            return "mapOf()"
-        }
+    private fun KotlinFile.write(baseOutputDir: Path, name: String) {
+        val folders = packageName?.split(".") ?: error("package name not found")
 
-        val entries = resources.joinToString(",\n        ") { resource ->
-            val chunksStr = resource.chunks.joinToString(",\n            ") { "\"$it\"" }
-
-            """
-            "${resource.path}" to Resource(
-                chunks = listOf(
-                    $chunksStr
-                ),
-                key = "${resource.key}"
-            )
-            """.trimIndent()
-        }
-
-        return """
-        mapOf(
-            $entries
-        )
-        """.trimIndent()
+        folders.fold(baseOutputDir) { dir, folder -> dir.resolve(folder) }
+            .resolve("$name.kt")
+            .mkDirs()
+            .write(render())
     }
 
-    private data class ResourceData(val path: String, val chunks: List<String>, val key: String)
+    private data class FilePathInfo(val absolutePath: Path, val relativePath: String, val key: String)
 
     private fun Path.list(): List<Path> = fileSystem.list(this)
     private val Path.isDirectory: Boolean get() = fileSystem.metadataOrNull(this)?.isDirectory == true
     private val Path.exists: Boolean get() = fileSystem.exists(this)
+    private fun Path.write(text: String) = fileSystem.write(this, false) { writeUtf8(text) }
+
+    private fun Path.mkDirs(): Path {
+        if (exists) return this
+
+        if (isDirectory) {
+            fileSystem.createDirectories(this, false)
+        } else {
+            fileSystem.createDirectories(this.parent!!, false)
+        }
+
+        return this
+    }
 }

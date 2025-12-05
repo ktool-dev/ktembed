@@ -15,7 +15,7 @@ import okio.ByteString.Companion.decodeBase64
  */
 open class BaseResources(
     private val resourceDirectory: ResourceDirectory,
-    private val inMemoryCutoff: Int,
+    private val inMemoryCutoff: Long,
     private val cacheDirectory: Path?,
     private val fileSystem: FileSystem,
 ) {

@@ -54,6 +54,7 @@ kotlin {
 
         jvmTest.dependencies {
             implementation(libs.kotest.runner.junit5)
+            implementation(libs.okio.fakefilesystem)
         }
 
         nativeMain.dependencies {
