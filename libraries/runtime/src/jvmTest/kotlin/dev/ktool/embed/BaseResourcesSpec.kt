@@ -7,7 +7,7 @@ import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 
-class ResourcesSpec : BddSpec({
+class InternalResourcesSpec : BddSpec({
     "checking if resource exists" {
         Given
         val fileSystem = FakeFileSystem()
@@ -214,7 +214,7 @@ class ResourcesSpec : BddSpec({
             chunk2.encodeUtf8().base64(),
             chunk3.encodeUtf8().base64()
         )
-        val resource = EmbeddedResource(chunks, "chunked.txt", "chunked.txt")
+        val resource = Resource(chunks, "chunked.txt", "chunked.txt")
         val resourceDir = TestResourceDirectory("test-dir", mapOf("chunked.txt" to resource))
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
         val output = Buffer()
@@ -298,6 +298,212 @@ class ResourcesSpec : BddSpec({
         output2.readUtf8() shouldBe content
         metadata1.lastModifiedAtMillis shouldBe metadata2.lastModifiedAtMillis
     }
+
+    "getting resource as path creates cache file" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val content = "File on disk"
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("file.txt" to content))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path = resources.asPath("file.txt")
+
+        Then
+        path shouldBe "/tmp/test-dir/file.txt".toPath()
+        fileSystem.exists(path!!) shouldBe true
+        fileSystem.read(path) { readUtf8() } shouldBe content
+    }
+
+    "getting same resource as path multiple times returns same path" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val content = "Repeated access"
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("file.txt" to content))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path1 = resources.asPath("file.txt")
+        val path2 = resources.asPath("file.txt")
+        val path3 = resources.asPath("file.txt")
+
+        Then
+        path1 shouldBe path2
+        path2 shouldBe path3
+        path1 shouldBe "/tmp/test-dir/file.txt".toPath()
+    }
+
+    "getting resource as path validates existing file" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val originalContent = "Original content"
+        val tamperedContent = "Tampered content"
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("file.txt" to originalContent))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        And("Create a tampered file in the cache")
+        val cachePath = "/tmp/test-dir/file.txt".toPath()
+        fileSystem.createDirectories("/tmp/test-dir".toPath())
+        fileSystem.write(cachePath) {
+            writeUtf8(tamperedContent)
+        }
+
+        When
+        val path = resources.asPath("file.txt")
+
+        Then("Should detect mismatch and overwrite with correct content")
+        path shouldBe cachePath
+        fileSystem.read(path!!) { readUtf8() } shouldBe originalContent
+    }
+
+    "getting resource as path reuses validated file" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val content = "Validated content"
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("file.txt" to content))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        And("First call to create and validate the file")
+        val path1 = resources.asPath("file.txt")
+        val metadata1 = fileSystem.metadata(path1!!)
+
+        When("Second call should reuse validated file without rewriting")
+        val path2 = resources.asPath("file.txt")
+        val metadata2 = fileSystem.metadata(path2!!)
+
+        Then("File timestamps should be identical (not rewritten)")
+        path1 shouldBe path2
+        metadata1.lastModifiedAtMillis shouldBe metadata2.lastModifiedAtMillis
+        fileSystem.read(path1) { readUtf8() } shouldBe content
+    }
+
+    "getting resource as path with chunked content" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val chunk1 = "Chunk A - "
+        val chunk2 = "Chunk B - "
+        val chunk3 = "Chunk C"
+        val fullContent = chunk1 + chunk2 + chunk3
+        val chunks = listOf(
+            chunk1.encodeUtf8().base64(),
+            chunk2.encodeUtf8().base64(),
+            chunk3.encodeUtf8().base64()
+        )
+        val resource = Resource(chunks, "multi.txt", "multi.txt")
+        val resourceDir = TestResourceDirectory("test-dir", mapOf("multi.txt" to resource))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path = resources.asPath("multi.txt")
+
+        Then
+        path shouldBe "/tmp/test-dir/multi.txt".toPath()
+        fileSystem.exists(path!!) shouldBe true
+        fileSystem.read(path) { readUtf8() } shouldBe fullContent
+    }
+
+    "getting different resources as paths creates separate files" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val content1 = "First file"
+        val content2 = "Second file"
+        val resourceDir = createTestResourceDirectory(
+            "test-dir",
+            mapOf("file1.txt" to content1, "file2.txt" to content2)
+        )
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path1 = resources.asPath("file1.txt")
+        val path2 = resources.asPath("file2.txt")
+
+        Then
+        path1 shouldBe "/tmp/test-dir/file1.txt".toPath()
+        path2 shouldBe "/tmp/test-dir/file2.txt".toPath()
+        fileSystem.read(path1!!) { readUtf8() } shouldBe content1
+        fileSystem.read(path2!!) { readUtf8() } shouldBe content2
+    }
+
+    "getting resource as path with large content" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val largeContent = "X".repeat(100_000) // 100KB
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("large.bin" to largeContent))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path = resources.asPath("large.bin")
+
+        Then
+        path shouldBe "/tmp/test-dir/large.bin".toPath()
+        fileSystem.exists(path!!) shouldBe true
+        fileSystem.read(path) { readUtf8() } shouldBe largeContent
+    }
+
+    "getting resource as path with unicode content" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val unicodeContent = "Hello 世界 🌍 Привет"
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("unicode.txt" to unicodeContent))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path = resources.asPath("unicode.txt")
+
+        Then
+        path shouldBe "/tmp/test-dir/unicode.txt".toPath()
+        fileSystem.read(path!!) { readUtf8() } shouldBe unicodeContent
+    }
+
+    "getting resource as path with empty content" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val emptyContent = ""
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("empty.txt" to emptyContent))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val path = resources.asPath("empty.txt")
+
+        Then
+        path shouldBe "/tmp/test-dir/empty.txt".toPath()
+        fileSystem.exists(path!!) shouldBe true
+        fileSystem.read(path) { readUtf8() } shouldBe ""
+    }
+
+    "getting non-existent resource as path throws error" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val resourceDir = createTestResourceDirectory("test-dir", mapOf("exists.txt" to "data"))
+        val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
+
+        When
+        val result = runCatching { resources.asPath("missing.txt") }
+
+        Then
+        result.isFailure shouldBe true
+        result.exceptionOrNull()?.message shouldBe "Resource not found: missing.txt"
+    }
+
+    "getting resource as path from different resource directories are independent" {
+        Given
+        val fileSystem = FakeFileSystem()
+        val content = "Same content"
+        val resourceDir1 = createTestResourceDirectory("dir1", mapOf("file.txt" to content))
+        val resourceDir2 = createTestResourceDirectory("dir2", mapOf("file.txt" to content))
+        val resources1 = createResourcesWithFakeFileSystem(resourceDir1, fileSystem)
+        val resources2 = createResourcesWithFakeFileSystem(resourceDir2, fileSystem)
+
+        When
+        val path1 = resources1.asPath("file.txt")
+        val path2 = resources2.asPath("file.txt")
+
+        Then
+        path1 shouldBe "/tmp/dir1/file.txt".toPath()
+        path2 shouldBe "/tmp/dir2/file.txt".toPath()
+        fileSystem.read(path1!!) { readUtf8() } shouldBe content
+        fileSystem.read(path2!!) { readUtf8() } shouldBe content
+    }
 })
 
 /**
@@ -306,7 +512,7 @@ class ResourcesSpec : BddSpec({
 private fun createTestResourceDirectory(key: String, contentMap: Map<String, String>): ResourceDirectory {
     val resources = contentMap.mapValues { (path, content) ->
         val base64Content = content.encodeUtf8().base64()
-        EmbeddedResource(listOf(base64Content), path, path)
+        Resource(listOf(base64Content), path, path)
     }
     return TestResourceDirectory(key, resources)
 }
@@ -318,8 +524,8 @@ private fun createResourcesWithFakeFileSystem(
     resourceDir: ResourceDirectory,
     fileSystem: FakeFileSystem,
     inMemoryCutoff: Int = IN_MEMORY_CUT_OFF
-): Resources {
-    return Resources(
+): BaseResources {
+    return BaseResources(
         resourceDirectory = resourceDir,
         inMemoryCutoff = inMemoryCutoff,
         fileSystem = fileSystem,
@@ -332,7 +538,7 @@ private fun createResourcesWithFakeFileSystem(
  */
 private class TestResourceDirectory(
     override val key: String,
-    private val resources: Map<String, EmbeddedResource>
+    private val resources: Map<String, Resource>
 ) : ResourceDirectory {
-    override fun get(path: String): EmbeddedResource? = resources[path]
+    override fun get(path: String): Resource? = resources[path]
 }

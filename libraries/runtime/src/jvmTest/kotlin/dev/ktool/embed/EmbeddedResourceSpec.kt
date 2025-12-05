@@ -14,7 +14,7 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
 
         When
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "greeting.txt",
             key = "greeting.txt"
@@ -38,7 +38,7 @@ class EmbeddedResourceSpec : BddSpec({
         )
 
         When
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "multipart.txt",
             key = "multipart.txt"
@@ -54,7 +54,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Test content"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "test.txt",
             key = "test.txt"
@@ -72,7 +72,7 @@ class EmbeddedResourceSpec : BddSpec({
         val content = "Binary content"
         val expectedBytes = content.encodeUtf8()
         val base64Chunk = content.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "binary.bin",
             key = "binary.bin"
@@ -89,7 +89,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val fullContent = "Hello beautiful world!"
         val base64Chunks = createBase64Chunks(fullContent, 3)
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "multi.txt",
             key = "multi.txt"
@@ -107,7 +107,7 @@ class EmbeddedResourceSpec : BddSpec({
         val fullContent = "Part1Part2Part3"
         val expectedBytes = fullContent.encodeUtf8()
         val base64Chunks = createBase64Chunks(fullContent, 3)
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "parts.bin",
             key = "parts.bin"
@@ -124,7 +124,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Small content"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "small.txt",
             key = "small.txt"
@@ -148,7 +148,7 @@ class EmbeddedResourceSpec : BddSpec({
             chunk2.encodeUtf8().base64(),
             chunk3.encodeUtf8().base64()
         )
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "sized.txt",
             key = "sized.txt"
@@ -171,7 +171,7 @@ class EmbeddedResourceSpec : BddSpec({
             "chunk3".encodeUtf8().base64(),
             "final".encodeUtf8().base64()
         )
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "test.txt",
             key = "test.txt"
@@ -189,7 +189,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Lazy content"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "lazy.txt",
             key = "lazy.txt"
@@ -210,7 +210,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Lazy bytes"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "lazy.bin",
             key = "lazy.bin"
@@ -231,7 +231,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val emptyContent = ""
         val base64Chunk = emptyContent.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "empty.txt",
             key = "empty.txt"
@@ -250,7 +250,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val unicodeContent = "Hello 世界 🌍 Привет"
         val base64Chunk = unicodeContent.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "unicode.txt",
             key = "unicode.txt"
@@ -270,7 +270,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val specialContent = "Tab:\t Newline:\n Quote:\" Backslash:\\ Null:\u0000"
         val base64Chunk = specialContent.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "special.txt",
             key = "special.txt"
@@ -287,7 +287,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val largeContent = "X".repeat(10_000)
         val base64Chunk = largeContent.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "large.txt",
             key = "large.txt"
@@ -305,7 +305,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val fullContent = "A".repeat(50_000) + "B".repeat(50_000) + "C".repeat(50_000)
         val base64Chunks = createBase64Chunks(fullContent, 3)
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "huge.txt",
             key = "huge.txt"
@@ -323,12 +323,12 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Same content"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource1 = EmbeddedResource(
+        val resource1 = Resource(
             chunks = listOf(base64Chunk),
             path = "file.txt",
             key = "file.txt"
         )
-        val resource2 = EmbeddedResource(
+        val resource2 = Resource(
             chunks = listOf(base64Chunk),
             path = "file.txt",
             key = "file.txt"
@@ -346,12 +346,12 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Same content"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource1 = EmbeddedResource(
+        val resource1 = Resource(
             chunks = listOf(base64Chunk),
             path = "file1.txt",
             key = "file1.txt"
         )
-        val resource2 = EmbeddedResource(
+        val resource2 = Resource(
             chunks = listOf(base64Chunk),
             path = "file2.txt",
             key = "file2.txt"
@@ -368,12 +368,12 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content1 = "First content"
         val content2 = "Second content"
-        val resource1 = EmbeddedResource(
+        val resource1 = Resource(
             chunks = listOf(content1.encodeUtf8().base64()),
             path = "file.txt",
             key = "file.txt"
         )
-        val resource2 = EmbeddedResource(
+        val resource2 = Resource(
             chunks = listOf(content2.encodeUtf8().base64()),
             path = "file.txt",
             key = "file.txt"
@@ -388,7 +388,7 @@ class EmbeddedResourceSpec : BddSpec({
 
     "data class copy functionality" {
         Given
-        val original = EmbeddedResource(
+        val original = Resource(
             chunks = listOf("content".encodeUtf8().base64()),
             path = "original.txt",
             key = "original.txt"
@@ -410,7 +410,7 @@ class EmbeddedResourceSpec : BddSpec({
         val base64Chunk = content.encodeUtf8().base64()
 
         When
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "path/to/file.txt",
             key = "unique-key-123"
@@ -426,7 +426,7 @@ class EmbeddedResourceSpec : BddSpec({
         Given
         val content = "Consistent content"
         val base64Chunk = content.encodeUtf8().base64()
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = listOf(base64Chunk),
             path = "consistent.txt",
             key = "consistent.txt"
@@ -451,7 +451,7 @@ class EmbeddedResourceSpec : BddSpec({
     ) { (content, numChunks) ->
         Given("content: '$content' split into $numChunks chunks")
         val base64Chunks = createBase64Chunks(content, numChunks)
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "test.txt",
             key = "test.txt"
@@ -472,7 +472,7 @@ class EmbeddedResourceSpec : BddSpec({
     ) { (targetChunkCount, content) ->
         Given("targeting $targetChunkCount chunks")
         val base64Chunks = createBase64Chunks(content, targetChunkCount)
-        val resource = EmbeddedResource(
+        val resource = Resource(
             chunks = base64Chunks,
             path = "test.txt",
             key = "test.txt"

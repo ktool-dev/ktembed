@@ -6,8 +6,6 @@ import okio.ByteString.Companion.decodeBase64
 internal const val RESOURCE_CHUNK_SIZE = 60_000
 internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
 
-internal expect fun getSystemTempDirectory(): Path?
-
 /**
  * Computes a SHA-256 hash from decoded Base64 chunks.
  * This decodes each chunk and processes it individually.
@@ -27,7 +25,7 @@ internal fun computeHash(chunks: List<String>): String {
  *
  * @return 64-character hexadecimal SHA-256 hash
  */
-internal fun computeHash(path: Path, fileSystem: FileSystem = FileSystem.SYSTEM): String {
+internal fun computeHash(path: Path, fileSystem: FileSystem): String {
     val hashingSink = HashingSink.sha256(blackholeSink())
     hashingSink.buffer().use { buffer ->
         fileSystem.source(path).buffer().use { buffer.writeAll(it) }

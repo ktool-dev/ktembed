@@ -1,4 +1,4 @@
-package dev.ktool.embed.util
+package dev.ktool.embed
 
 import okio.Buffer
 import okio.FileSystem
@@ -10,6 +10,7 @@ fun Path.readText(): String = FileSystem.SYSTEM.read(this) { readUtf8() }
 fun Path.write(buffer: Buffer) = FileSystem.SYSTEM.read(this) {
     readAll(buffer)
 }
+
 fun Path.writeText(content: String) {
     FileSystem.SYSTEM.write(this) { writeUtf8(content) }
 }

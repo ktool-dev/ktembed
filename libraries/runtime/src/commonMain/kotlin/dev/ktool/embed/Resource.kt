@@ -3,7 +3,7 @@ package dev.ktool.embed
 import okio.ByteString
 import okio.ByteString.Companion.decodeBase64
 
-data class EmbeddedResource(
+data class Resource(
     val chunks: List<String>,
     val path: String,
     val key: String,
@@ -14,7 +14,3 @@ data class EmbeddedResource(
     val asBytes: ByteString by lazy { chunks.joinToString("").decodeBase64()!! }
 }
 
-interface ResourceDirectory {
-    operator fun get(path: String): EmbeddedResource?
-    val key: String
-}

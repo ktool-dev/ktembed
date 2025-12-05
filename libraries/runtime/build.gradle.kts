@@ -32,6 +32,15 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
+    js(IR) {
+        browser()
+        nodejs()
+    }
+    wasmJs {
+        browser()
+        nodejs()
+    }
+
     linuxX64()
     macosX64()
     macosArm64()
