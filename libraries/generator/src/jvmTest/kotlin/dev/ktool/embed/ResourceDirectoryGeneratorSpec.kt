@@ -19,7 +19,7 @@ class ResourceDirectoryGeneratorSpec : BddSpec({
         output shouldContain "package com.example.test"
         output shouldContain "import dev.ktool.embed.Resource"
         output shouldContain "import dev.ktool.embed.ResourceDirectory"
-        output shouldContain "class ResourceDirectory : ResourceDirectory"
+        output shouldContain "object ResourceDirectory : ResourceDirectory"
         output shouldContain """override val key: String = "com-example-test""""
         output shouldContain "private val resources: Map<String, Resource> = mapOf("
         output shouldContain ")"
@@ -106,7 +106,7 @@ class ResourceDirectoryGeneratorSpec : BddSpec({
 
         Then
         val output = kotlinFile.render()
-        output shouldContain "class ResourceDirectory : ResourceDirectory"
+        output shouldContain "object ResourceDirectory : ResourceDirectory"
     }
 
     "generated class has private resources property" {

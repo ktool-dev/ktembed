@@ -600,7 +600,6 @@ class AssetProcessorSpec : BddSpec({
         Then
         outputDir.resolve("dev/ktool/embed/test/ResourceDirectory.kt").toFile().exists() shouldBe true
         outputDir.resolve("dev/ktool/embed/test/ResourceChunks1.kt").toFile().exists() shouldBe true
-        outputDir.toFile().deleteRecursively()
     }
 })
 

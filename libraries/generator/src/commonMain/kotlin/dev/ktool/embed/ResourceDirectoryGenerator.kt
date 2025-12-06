@@ -18,7 +18,7 @@ class ResourceDirectoryGenerator(private val fileSystem: FileSystem = FileSystem
         +Import("dev.ktool.embed.Resource")
         +Import("dev.ktool.embed.ResourceDirectory")
 
-        +Class("ResourceDirectory") {
+        +Object("ResourceDirectory") {
             +SuperType("ResourceDirectory")
 
             +Property("key", type = StringType, modifiers = listOf(Modifier.Override)) {
