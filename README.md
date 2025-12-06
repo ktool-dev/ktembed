@@ -242,7 +242,7 @@ object ResourceDirectory : ResourceDirectory {
 1. **Build Time**: The Gradle plugin scans your resource directories and generates Kotlin code with Base64-encoded
    resources
 2. **Compile Time**: Resources are compiled directly into your application binary
-3. **Runtime**: Resources are lazily decoded and cached as needed
+3. **Runtime**: Resources accessed through `Resources` class and are lazily decoded and cached as needed
 
 ### Resource Encoding
 
