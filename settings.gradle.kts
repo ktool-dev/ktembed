@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "embed"
+rootProject.name = "ktembed"
 
 val projectTypeDirs = listOf("libraries", "applications", "integrations")
 
