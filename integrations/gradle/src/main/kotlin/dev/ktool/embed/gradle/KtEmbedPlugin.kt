@@ -23,8 +23,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  *
  * ktembed {
  *     packageName = "com.example.resources"
- *     resourceDirectories = files("src/main/resources")
- *     filter = { path -> path.endsWith(".tmp") }
+ *     resourceDirectories = listOf("src/main/resources")
+ *     exclude = { path -> path.endsWith(".tmp") }
  * }
  * ```
  */
@@ -35,7 +35,7 @@ class KtEmbedPlugin : Plugin<Project> {
         val generateTask = project.tasks.register("generateKtEmbedResources", KtEmbedTask::class.java) { task ->
             task.packageName.set(extension.packageName)
             task.resourceDirectories.setFrom(extension.resourceDirectories)
-            task.filter.set(extension.filter)
+            task.exclude.set(extension.exclude)
             task.outputDirectory.set(project.layout.buildDirectory.dir("ktembed"))
         }
 

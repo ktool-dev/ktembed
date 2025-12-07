@@ -32,7 +32,7 @@ abstract class KtEmbedTask : DefaultTask() {
      * The function should return true for paths to ignore, false otherwise.
      */
     @get:Input
-    abstract val filter: Property<(String) -> Boolean>
+    abstract val exclude: Property<(String) -> Boolean>
 
     /**
      * The output directory where generated Kotlin files will be written.
@@ -49,14 +49,17 @@ abstract class KtEmbedTask : DefaultTask() {
     fun generate() {
         val packageNameValue = packageName.get()
         val outputDir = outputDirectory.get().asFile.toOkioPath()
-        val filterFunc = filter.get()
-        
+        val filterFunc = exclude.get()
+
         val directories = resourceDirectories.files.map { it.toOkioPath() }
-        
+
+        require(packageNameValue.isNotEmpty()) { "Package name must not be empty, you must set it using `packageName`" }
+        require(directories.isNotEmpty()) { "You must specify at least one directory for `resourceDirectories`" }
+
         logger.lifecycle("Generating ResourceDirectory for package: $packageNameValue")
         logger.lifecycle("Resource directories: ${directories.joinToString(", ")}")
         logger.lifecycle("Output directory: $outputDir")
-        
+
         val processor = AssetProcessor()
         processor.process(
             directories = directories,
@@ -64,7 +67,7 @@ abstract class KtEmbedTask : DefaultTask() {
             baseOutputDir = outputDir,
             ignore = { path -> filterFunc(path.toString()) }
         )
-        
+
         logger.lifecycle("Successfully generated ResourceDirectory")
     }
 }
