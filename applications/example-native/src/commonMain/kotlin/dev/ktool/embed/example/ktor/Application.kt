@@ -3,16 +3,14 @@ package dev.ktool.embed.example.ktor
 import dev.ktml.ktor.KtmlPlugin
 import dev.ktml.ktor.respondKtml
 import dev.ktml.templates.KtmlRegistry
-import dev.ktool.embed.Resources
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.utils.io.*
 
-val resources = Resources(ResourceDirectory)
+//val resources = Resources(ResourceDirectory)
 
 fun main() {
     embeddedServer(CIO, port = 8080, host = "0.0.0.0") {
@@ -44,7 +42,7 @@ fun Application.configureRouting() {
         }
         get("/static/img/Ktool Logo.png") {
             call.respondBytesWriter(contentType = ContentType.Image.PNG, status = HttpStatusCode.OK) {
-                writeByteArray(resources.asBytes("img/Ktool Logo.png").toByteArray())
+                //writeByteArray(resources.asBytes("img/Ktool Logo.png").toByteArray())
             }
         }
     }
