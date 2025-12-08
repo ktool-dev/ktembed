@@ -8,7 +8,7 @@ be accessed efficiently at runtime with automatic caching and optimization strat
 
 ## Features
 
-- 🚀 **Zero Runtime Dependencies** - Resources are embedded directly in your compiled code
+- 🚀 **Small Runtime Dependency** - Resources are embedded directly in your compiled code, using Okio for reading
 - 🔧 **Gradle Integration** - Simple plugin configuration with automatic code generation
 - 🎯 **Kotlin Multiplatform** - Works on JVM, Native, and other Kotlin targets
 - 💾 **Smart Caching** - Automatic memory and disk caching with configurable strategies
@@ -31,12 +31,7 @@ plugins {
 ```kotlin
 ktembed {
     packageName = "com.example.resources"
-    resourceDirectories = files("src/main/resources")
-
-    // Optional: filter out specific files
-    filter = { path ->
-        path.endsWith(".tmp") || path.contains("secret")
-    }
+    resourceDirectories = listOf("src/main/resources")
 }
 ```
 
@@ -50,14 +45,14 @@ import dev.ktool.embed.Resources
 val resources = Resources(ResourceDirectory)
 
 // Read as string
-val config = resources.asString("config.json")
+val config = resources.asString("config/config.json")
 
 // Read as bytes
-val image = resources.asBytes("logo.png")
+val image = resources.asBytes("img/logo.png")
 
 // Check if resource exists
-if (resources.exists("optional.txt")) {
-    println(resources.asString("optional.txt"))
+if (resources.exists("text/optional.txt")) {
+    println(resources.asString("text/optional.txt"))
 }
 
 // Write to output stream (JVM only)
@@ -100,8 +95,8 @@ The `ktembed` extension provides the following configuration options:
 | Property              | Type                  | Required | Description                                              |
 |-----------------------|-----------------------|----------|----------------------------------------------------------|
 | `packageName`         | `String`              | Yes      | Package name for the generated `ResourceDirectory` class |
-| `resourceDirectories` | `FileCollection`      | Yes      | Directories to scan for resources                        |
-| `filter`              | `(String) -> Boolean` | No       | Function to exclude paths (returns `true` to ignore)     |
+| `resourceDirectories` | `StringList`          | Yes      | Directories to scan for resources                        |
+| `eclude`              | `(String) -> Boolean` | No       | Function to exclude paths (returns `true` to ignore)     |
 
 ### Example Configuration
 
@@ -111,14 +106,14 @@ ktembed {
     packageName = "com.myapp.assets"
 
     // Multiple resource directories
-    resourceDirectories = files(
+    resourceDirectories = listOf(
         "src/main/resources",
         "assets",
         "static"
     )
 
     // Filter function to exclude files
-    filter = { path ->
+    exclude = { path ->
         path.endsWith(".tmp") ||           // Ignore temp files
                 path.contains(".git") ||           // Ignore git files
                 path.startsWith("private/")        // Ignore private directory
@@ -227,10 +222,11 @@ object ResourceDirectory : ResourceDirectory {
     override val key: String = "com-example-resources"
 
     private val resources: Map<String, Resource> = mapOf(
-        "config.json" to Resource("config.json", listOf(...)
-    ),
-    "logo.png" to Resource("logo.png", listOf(...)),
-    // ... more resources
+        "config.json" to Resource(
+            "config.json", RESOURCE_1
+        ),
+        "logo.png" to Resource("logo.png", RESOURCE_2),
+        // ... more resources
     )
 
     override operator fun get(path: String): Resource? = resources[path]

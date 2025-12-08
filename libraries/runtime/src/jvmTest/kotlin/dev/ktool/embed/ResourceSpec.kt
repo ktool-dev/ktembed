@@ -461,22 +461,22 @@ class ResourceSpec : BddSpec({
 
 /**
  * Helper function to create base64 chunks from content.
- * Mimics the behavior of the actual code generator: encode full content to base64,
- * then split the base64 string into chunks.
+ * Mimics the behavior of the actual code generator: split the raw bytes into chunks,
+ * then encode each chunk separately to base64.
  */
 private fun createBase64Chunks(content: String, numChunks: Int): List<String> {
-    val base64Full = content.encodeUtf8().base64()
+    val bytes = content.encodeUtf8()
 
     return when {
-        base64Full.isEmpty() -> listOf("")
-        numChunks <= 1 -> listOf(base64Full)
+        bytes.size == 0 -> listOf("")
+        numChunks <= 1 -> listOf(bytes.base64())
         else -> {
-            val chunkSize = maxOf(1, base64Full.length / numChunks)
+            val chunkSize = maxOf(1, bytes.size / numChunks)
             buildList {
                 var offset = 0
-                while (offset < base64Full.length) {
-                    val end = minOf(offset + chunkSize, base64Full.length)
-                    add(base64Full.substring(offset, end))
+                while (offset < bytes.size) {
+                    val end = minOf(offset + chunkSize, bytes.size)
+                    add(bytes.substring(offset, end).base64())
                     offset = end
                 }
             }
