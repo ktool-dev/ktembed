@@ -592,7 +592,8 @@ class AssetProcessorSpec : BddSpec({
 
         val assetProcessor = AssetProcessor()
         val packageName = "dev.ktool.embed.test"
-        val dirs = listOf("../runtime/src".toPath())
+        val dirs =
+            listOf("/Users/aaron/Projects/Ktool/KtEmbed/applications/example-native/src/commonMain/resources/static".toPath())
 
         When
         assetProcessor.process(dirs, packageName, outputDir) { it.name.startsWith(".") }
@@ -615,11 +616,11 @@ private fun extractBase64Chunks(generatedCode: String): List<String> {
 }
 
 private fun decodeChunks(base64Chunks: List<String>): String {
-    return base64Chunks.joinToString("") { it.decodeBase64()!!.utf8() }
+    return base64Chunks.joinToString("") { it.decodeBase64()!!.uncompress().utf8() }
 }
 
 private fun decodeChunksToBytes(base64Chunks: List<String>): ByteArray {
     return base64Chunks
-        .map { it.decodeBase64()!!.toByteArray() }
+        .map { it.decodeBase64()!!.uncompress().toByteArray() }
         .reduce { acc, bytes -> acc + bytes }
 }

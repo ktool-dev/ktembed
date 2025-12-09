@@ -11,7 +11,7 @@ data class Resource(val key: String, val chunks: List<String>) {
     val asBytes: ByteString by lazy {
         val buffer = Buffer()
         chunks.forEach { chunk ->
-            buffer.write(chunk.decodeBase64()!!)
+            buffer.write(chunk.decodeBase64()!!.uncompress())
         }
         buffer.readByteString()
     }

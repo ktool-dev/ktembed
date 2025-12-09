@@ -30,9 +30,9 @@ class ResourceSpec : BddSpec({
         val chunk2 = "Second part"
         val chunk3 = "Third part"
         val base64Chunks = listOf(
-            chunk1.encodeUtf8().base64(),
-            chunk2.encodeUtf8().base64(),
-            chunk3.encodeUtf8().base64()
+            chunk1.encodeUtf8().compress().base64(),
+            chunk2.encodeUtf8().compress().base64(),
+            chunk3.encodeUtf8().compress().base64()
         )
 
         When
@@ -49,7 +49,7 @@ class ResourceSpec : BddSpec({
     "reading resource as string from single chunk" {
         Given
         val content = "Test content"
-        val base64Chunk = content.encodeUtf8().base64()
+        val base64Chunk = content.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "test.txt"
@@ -66,7 +66,7 @@ class ResourceSpec : BddSpec({
         Given
         val content = "Binary content"
         val expectedBytes = content.encodeUtf8()
-        val base64Chunk = content.encodeUtf8().base64()
+        val base64Chunk = content.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "binary.bin"
@@ -177,7 +177,7 @@ class ResourceSpec : BddSpec({
     "asString is lazily evaluated" {
         Given
         val content = "Lazy content"
-        val base64Chunk = content.encodeUtf8().base64()
+        val base64Chunk = content.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "lazy.txt"
@@ -197,7 +197,7 @@ class ResourceSpec : BddSpec({
     "asBytes is lazily evaluated" {
         Given
         val content = "Lazy bytes"
-        val base64Chunk = content.encodeUtf8().base64()
+        val base64Chunk = content.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "lazy.bin"
@@ -217,7 +217,7 @@ class ResourceSpec : BddSpec({
     "empty content resource" {
         Given
         val emptyContent = ""
-        val base64Chunk = emptyContent.encodeUtf8().base64()
+        val base64Chunk = emptyContent.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "empty.txt"
@@ -235,7 +235,7 @@ class ResourceSpec : BddSpec({
     "resource with unicode content" {
         Given
         val unicodeContent = "Hello 世界 🌍 Привет"
-        val base64Chunk = unicodeContent.encodeUtf8().base64()
+        val base64Chunk = unicodeContent.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "unicode.txt"
@@ -254,7 +254,7 @@ class ResourceSpec : BddSpec({
     "resource with special characters" {
         Given
         val specialContent = "Tab:\t Newline:\n Quote:\" Backslash:\\ Null:\u0000"
-        val base64Chunk = specialContent.encodeUtf8().base64()
+        val base64Chunk = specialContent.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "special.txt"
@@ -270,7 +270,7 @@ class ResourceSpec : BddSpec({
     "resource with large content in single chunk" {
         Given
         val largeContent = "X".repeat(10_000)
-        val base64Chunk = largeContent.encodeUtf8().base64()
+        val base64Chunk = largeContent.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "large.txt"
@@ -396,7 +396,7 @@ class ResourceSpec : BddSpec({
     "asString and asBytes represent same content" {
         Given
         val content = "Consistent content"
-        val base64Chunk = content.encodeUtf8().base64()
+        val base64Chunk = content.encodeUtf8().compress().base64()
         val resource = Resource(
             chunks = listOf(base64Chunk),
             key = "consistent.txt"
@@ -468,15 +468,15 @@ private fun createBase64Chunks(content: String, numChunks: Int): List<String> {
     val bytes = content.encodeUtf8()
 
     return when {
-        bytes.size == 0 -> listOf("")
-        numChunks <= 1 -> listOf(bytes.base64())
+        bytes.size == 0 -> listOf("".encodeUtf8().compress().base64())
+        numChunks <= 1 -> listOf(bytes.compress().base64())
         else -> {
             val chunkSize = maxOf(1, bytes.size / numChunks)
             buildList {
                 var offset = 0
                 while (offset < bytes.size) {
                     val end = minOf(offset + chunkSize, bytes.size)
-                    add(bytes.substring(offset, end).base64())
+                    add(bytes.substring(offset, end).compress().base64())
                     offset = end
                 }
             }

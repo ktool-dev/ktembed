@@ -13,6 +13,7 @@ gradle-publish = "2.0.0"
 ktembed = "0.0.2"
 ktor = "3.3.0"
 ktml = "0.1.10"
+korge = "6.0.0"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -31,6 +32,7 @@ ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 ktml-runtime = { module = "dev.ktml:ktml-runtime", version.ref = "ktml" }
 ktml-ktor = { module = "dev.ktml:ktml-ktor", version.ref = "ktml" }
 ktembed-runtime = { module = "dev.ktool:ktembed-runtime", version.ref = "ktembed" }
+korge-compression = { module = "com.soywiz:korlibs-compression", version.ref = "korge" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

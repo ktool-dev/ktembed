@@ -1,10 +1,14 @@
 package dev.ktool.embed
 
+import korlibs.io.compression.compress
+import korlibs.io.compression.deflate.ZLib
+import korlibs.io.compression.uncompress
 import okio.*
 import okio.ByteString.Companion.decodeBase64
+import okio.ByteString.Companion.toByteString
 
-const val RESOURCE_CHUNK_SIZE = 60_000L
-internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
+const val RESOURCE_CHUNK_SIZE = 100_000L
+internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 50
 
 /**
  * Computes a SHA-256 hash from decoded Base64 chunks.
@@ -32,3 +36,7 @@ internal fun computeHash(path: Path, fileSystem: FileSystem): String {
     }
     return hashingSink.hash.hex()
 }
+
+fun ByteString.compress(): ByteString = toByteArray().compress(ZLib).toByteString()
+
+fun ByteString.uncompress(): ByteString = toByteArray().uncompress(ZLib).toByteString()

@@ -38,6 +38,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":runtime"))
             implementation(libs.okio)
+            implementation(libs.korge.compression)
             implementation(libs.kotlin.logging)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.ktool.kotlin.gen)

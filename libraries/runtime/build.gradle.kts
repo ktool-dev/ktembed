@@ -49,6 +49,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.okio)
+            implementation(libs.korge.compression)
         }
 
         commonTest.dependencies {

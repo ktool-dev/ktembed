@@ -96,7 +96,7 @@ open class BaseResources(
                     fileSystem.source(filePath).use { buffer.writeAll(it) }
                 } else {
                     for (chunk in resource.chunks) {
-                        chunk.decodeBase64()?.also { buffer.write(it) }
+                        chunk.decodeBase64()?.also { buffer.write(it.uncompress()) }
                     }
                 }
             }
@@ -120,7 +120,7 @@ open class BaseResources(
 
             filePath.write {
                 for (chunk in resource.chunks) {
-                    chunk.decodeBase64()?.also { write(it) }
+                    chunk.decodeBase64()?.also { write(it.uncompress()) }
                 }
             }
             validatedFiles.add(filePath)

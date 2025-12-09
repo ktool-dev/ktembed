@@ -6,8 +6,9 @@ import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import kotlin.random.Random
 
-class InternalResourcesSpec : BddSpec({
+class BaseResourcesSpec : BddSpec({
     "checking if resource exists" {
         Given
         val fileSystem = FakeFileSystem()
@@ -150,7 +151,11 @@ class InternalResourcesSpec : BddSpec({
     "writing large resource exceeding cutoff uses Memory strategy automatically" {
         Given
         val fileSystem = FakeFileSystem()
-        val largeContent = "X".repeat(100_000) // 100KB
+        val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        val largeContent = (1..190_000)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
         val resourceDir = createTestResourceDirectory("test-dir", mapOf("huge.txt" to largeContent))
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem, inMemoryCutoff = 50_000)
         val output = Buffer()
@@ -210,9 +215,9 @@ class InternalResourcesSpec : BddSpec({
         val chunk3 = "Part 3"
         val fullContent = chunk1 + chunk2 + chunk3
         val chunks = listOf(
-            chunk1.encodeUtf8().base64(),
-            chunk2.encodeUtf8().base64(),
-            chunk3.encodeUtf8().base64()
+            chunk1.encodeUtf8().compress().base64(),
+            chunk2.encodeUtf8().compress().base64(),
+            chunk3.encodeUtf8().compress().base64()
         )
         val resource = Resource("chunked.txt", chunks)
         val resourceDir = TestResourceDirectory("test-dir", mapOf("chunked.txt" to resource))
@@ -385,9 +390,9 @@ class InternalResourcesSpec : BddSpec({
         val chunk3 = "Chunk C"
         val fullContent = chunk1 + chunk2 + chunk3
         val chunks = listOf(
-            chunk1.encodeUtf8().base64(),
-            chunk2.encodeUtf8().base64(),
-            chunk3.encodeUtf8().base64()
+            chunk1.encodeUtf8().compress().base64(),
+            chunk2.encodeUtf8().compress().base64(),
+            chunk3.encodeUtf8().compress().base64()
         )
         val resource = Resource("multi.txt", chunks)
         val resourceDir = TestResourceDirectory("test-dir", mapOf("multi.txt" to resource))
@@ -511,7 +516,7 @@ class InternalResourcesSpec : BddSpec({
  */
 private fun createTestResourceDirectory(key: String, contentMap: Map<String, String>): ResourceDirectory {
     val resources = contentMap.mapValues { (path, content) ->
-        val base64Content = content.encodeUtf8().base64()
+        val base64Content = content.encodeUtf8().compress().base64()
         Resource(path, listOf(base64Content))
     }
     return TestResourceDirectory(key, resources)

@@ -3,6 +3,7 @@ package dev.ktool.embed
 import dev.ktool.gen.types.ExpressionBody
 import dev.ktool.gen.types.KotlinFile
 import dev.ktool.gen.types.Property
+import okio.Buffer
 import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
@@ -104,11 +105,27 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
                     initializer = ExpressionBody {
                         write("listOf(")
                         withIndent {
+                            val chunkBuffer = Buffer()
+                            var chunkSize = 0L
+
+                            fun writeChunk() {
+                                newLine(""""${chunkBuffer.readByteString().compress().base64()}",""")
+                                chunkCount++
+                                chunkBuffer.clear()
+                                chunkSize = 0L
+                            }
+                            
                             fileSystem.read(fileInfo.absolutePath) {
                                 while (!exhausted()) {
-                                    val chunk = readByteString(minOf(RESOURCE_CHUNK_SIZE, buffer.size)).base64()
-                                    newLine(""""$chunk",""")
-                                    chunkCount++
+                                    chunkSize += buffer.size
+                                    chunkBuffer.write(buffer.readByteString())
+                                    if (chunkSize >= RESOURCE_CHUNK_SIZE) {
+                                        writeChunk()
+                                    }
+                                }
+
+                                if (chunkSize > 0) {
+                                    writeChunk()
                                 }
                             }
                         }
