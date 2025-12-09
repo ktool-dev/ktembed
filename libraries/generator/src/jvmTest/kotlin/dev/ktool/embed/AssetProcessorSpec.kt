@@ -593,7 +593,7 @@ class AssetProcessorSpec : BddSpec({
         val assetProcessor = AssetProcessor()
         val packageName = "dev.ktool.embed.test"
         val dirs =
-            listOf("/Users/aaron/Projects/Ktool/KtEmbed/applications/example-native/src/commonMain/resources/static".toPath())
+            listOf("../runtime/src/commonMain".toPath())
 
         When
         assetProcessor.process(dirs, packageName, outputDir) { it.name.startsWith(".") }
