@@ -1,7 +1,6 @@
 package dev.ktool.embed
 
 import okio.*
-import okio.ByteString.Companion.decodeBase64
 
 /**
  * A class that provides functionality to handle resources stored in a ResourceDirectory. Resources can be accessed by a
@@ -42,14 +41,14 @@ open class BaseResources(
 
     /**
      * Converts the resource located at the given path into its binary representation. The first time this is called, it
-     * will cache the ByteString in memory. All later calls will use the cached ByteString. If you don't want the
-     * ByteString in memory, you should call the `write` function instead. This will throw an exception if the `path`
+     * will cache the ByteArray in memory. All later calls will use the cached ByteArray. If you don't want the
+     * ByteArray in memory, you should call the `write` function instead. This will throw an exception if the `path`
      * doesn't exist in the ResourceDirectory.
      *
      * @param path The relative path to the resource that should be converted to bytes.
-     * @return The byte representation of the resource.
+     * @return The ByteArray representation of the resource.
      */
-    fun asBytes(path: String) = path.toResource().asBytes
+    fun asByteArray(path: String) = path.toResource().asByteArray
 
     /**
      * Converts the relative path of a resource in the resource directory into its corresponding cache file path.
@@ -76,7 +75,7 @@ open class BaseResources(
     /**
      * Writes the resource located at the specified path to the provided output using the given OptimizationStrategy.
      * When OptimizationStrategy is Memory, it will write the content to a file on disk fist to avoid loading the whole
-     * content into memory. If the Optimization strategy is Speed, it will use the ByteString on the EmbeddedResource
+     * content into memory. If the Optimization strategy is Speed, it will use the ByteArray on the EmbeddedResource
      * and write it to the `sink`. This will throw an exception if the `path` doesn't exist in the ResourceDirectory.
      *
      * @param path The relative path to the resource that should be written.
@@ -89,14 +88,14 @@ open class BaseResources(
     private fun write(resource: Resource, output: Sink, optimizationStrategy: OptimizationStrategy) {
         output.buffer().use { buffer ->
             if (optimizationStrategy == OptimizationStrategy.Speed) {
-                buffer.write(resource.asBytes)
+                buffer.write(resource.asByteArray)
             } else {
                 val filePath = ensureFile(resourceDirectory.key, resource)
                 if (filePath != null) {
                     fileSystem.source(filePath).use { buffer.writeAll(it) }
                 } else {
                     for (chunk in resource.chunks) {
-                        chunk.decodeBase64()?.also { buffer.write(it.uncompress()) }
+                        buffer.write(chunk.decodeChunk())
                     }
                 }
             }
@@ -120,7 +119,7 @@ open class BaseResources(
 
             filePath.write {
                 for (chunk in resource.chunks) {
-                    chunk.decodeBase64()?.also { write(it.uncompress()) }
+                    write(chunk.decodeChunk())
                 }
             }
             validatedFiles.add(filePath)

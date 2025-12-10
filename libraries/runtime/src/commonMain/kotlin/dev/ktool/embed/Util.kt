@@ -7,8 +7,8 @@ import okio.*
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.toByteString
 
-const val RESOURCE_CHUNK_SIZE = 100_000L
-internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 50
+const val RESOURCE_CHUNK_SIZE = 40_000L
+internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
 
 /**
  * Computes a SHA-256 hash from decoded Base64 chunks.
@@ -37,6 +37,8 @@ internal fun computeHash(path: Path, fileSystem: FileSystem): String {
     return hashingSink.hash.hex()
 }
 
-fun ByteString.compress(): ByteString = toByteArray().compress(ZLib).toByteString()
+fun String.decodeChunk(): ByteArray = decodeBase64()?.toByteArray()?.uncompress(ZLib) ?: error("Unable to decode chunk")
 
-fun ByteString.uncompress(): ByteString = toByteArray().uncompress(ZLib).toByteString()
+fun Buffer.encodeChunk(): String = readByteString().encodeChunk().also { clear() }
+fun ByteString.encodeChunk() = toByteArray().encodeChunk()
+fun ByteArray.encodeChunk() = compress(ZLib).toByteString().base64()

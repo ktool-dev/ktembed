@@ -4,7 +4,7 @@ import dev.ktool.kotest.BddSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import okio.ByteString.Companion.decodeBase64
+import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 
@@ -616,11 +616,11 @@ private fun extractBase64Chunks(generatedCode: String): List<String> {
 }
 
 private fun decodeChunks(base64Chunks: List<String>): String {
-    return base64Chunks.joinToString("") { it.decodeBase64()!!.uncompress().utf8() }
+    return decodeChunksToBytes(base64Chunks).toByteString().utf8()
 }
 
 private fun decodeChunksToBytes(base64Chunks: List<String>): ByteArray {
     return base64Chunks
-        .map { it.decodeBase64()!!.uncompress().toByteArray() }
+        .map { it.decodeChunk() }
         .reduce { acc, bytes -> acc + bytes }
 }

@@ -109,12 +109,11 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
                             var chunkSize = 0L
 
                             fun writeChunk() {
-                                newLine(""""${chunkBuffer.readByteString().compress().base64()}",""")
+                                newLine(""""${chunkBuffer.encodeChunk()}",""")
                                 chunkCount++
-                                chunkBuffer.clear()
                                 chunkSize = 0L
                             }
-                            
+
                             fileSystem.read(fileInfo.absolutePath) {
                                 while (!exhausted()) {
                                     chunkSize += buffer.size

@@ -42,12 +42,12 @@ class BaseResourcesSpec : BddSpec({
         Given
         val fileSystem = FakeFileSystem()
         val content = "Binary content"
-        val expectedBytes = content.encodeUtf8()
+        val expectedBytes = content.encodeUtf8().toByteArray()
         val resourceDir = createTestResourceDirectory("test-dir", mapOf("data.bin" to content))
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val result = resources.asBytes("data.bin")
+        val result = resources.asByteArray("data.bin")
 
         Then
         result shouldBe expectedBytes
@@ -215,9 +215,9 @@ class BaseResourcesSpec : BddSpec({
         val chunk3 = "Part 3"
         val fullContent = chunk1 + chunk2 + chunk3
         val chunks = listOf(
-            chunk1.encodeUtf8().compress().base64(),
-            chunk2.encodeUtf8().compress().base64(),
-            chunk3.encodeUtf8().compress().base64()
+            chunk1.encodeUtf8().encodeChunk(),
+            chunk2.encodeUtf8().encodeChunk(),
+            chunk3.encodeUtf8().encodeChunk()
         )
         val resource = Resource("chunked.txt", chunks)
         val resourceDir = TestResourceDirectory("test-dir", mapOf("chunked.txt" to resource))
@@ -390,9 +390,9 @@ class BaseResourcesSpec : BddSpec({
         val chunk3 = "Chunk C"
         val fullContent = chunk1 + chunk2 + chunk3
         val chunks = listOf(
-            chunk1.encodeUtf8().compress().base64(),
-            chunk2.encodeUtf8().compress().base64(),
-            chunk3.encodeUtf8().compress().base64()
+            chunk1.encodeUtf8().encodeChunk(),
+            chunk2.encodeUtf8().encodeChunk(),
+            chunk3.encodeUtf8().encodeChunk()
         )
         val resource = Resource("multi.txt", chunks)
         val resourceDir = TestResourceDirectory("test-dir", mapOf("multi.txt" to resource))
@@ -516,7 +516,7 @@ class BaseResourcesSpec : BddSpec({
  */
 private fun createTestResourceDirectory(key: String, contentMap: Map<String, String>): ResourceDirectory {
     val resources = contentMap.mapValues { (path, content) ->
-        val base64Content = content.encodeUtf8().compress().base64()
+        val base64Content = content.encodeUtf8().encodeChunk()
         Resource(path, listOf(base64Content))
     }
     return TestResourceDirectory(key, resources)
