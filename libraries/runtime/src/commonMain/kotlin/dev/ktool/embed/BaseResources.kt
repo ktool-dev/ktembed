@@ -68,7 +68,8 @@ open class BaseResources(
      */
     fun write(path: String, output: Sink) {
         val resource = path.toResource()
-        val strategy = if (resource.size > inMemoryCutoff) OptimizationStrategy.Memory else OptimizationStrategy.Speed
+        val size = (resource.chunks.size - 1) * RESOURCE_CHUNK_SIZE + resource.chunks.last().length * 0.75
+        val strategy = if (size > inMemoryCutoff) OptimizationStrategy.Memory else OptimizationStrategy.Speed
         write(resource, output, strategy)
     }
 

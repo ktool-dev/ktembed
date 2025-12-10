@@ -35,7 +35,7 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
         directories: List<Path>,
         packageName: String,
         baseOutputDir: Path,
-        ignore: (Path) -> Boolean = { true },
+        ignore: (Path) -> Boolean = { false },
     ) {
         val filePaths = directories.flatMap { scanDirectoryForPaths(path = it, ignore = ignore) }
         val resourceMappings = generateResourceFiles(packageName, filePaths, baseOutputDir)
@@ -110,6 +110,7 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
 
                             fun writeChunk() {
                                 newLine(""""${chunkBuffer.encodeChunk()}",""")
+                                chunkBuffer.clear()
                                 chunkCount++
                                 chunkSize = 0L
                             }

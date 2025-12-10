@@ -39,6 +39,6 @@ internal fun computeHash(path: Path, fileSystem: FileSystem): String {
 
 fun String.decodeChunk(): ByteArray = decodeBase64()?.toByteArray()?.uncompress(ZLib) ?: error("Unable to decode chunk")
 
-fun Buffer.encodeChunk(): String = readByteString().encodeChunk().also { clear() }
+fun Buffer.encodeChunk(): String = readByteString().encodeChunk()
 fun ByteString.encodeChunk() = toByteArray().encodeChunk()
 fun ByteArray.encodeChunk() = compress(ZLib).toByteString().base64()

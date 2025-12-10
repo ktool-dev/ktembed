@@ -96,7 +96,7 @@ The `ktembed` extension provides the following configuration options:
 |-----------------------|-----------------------|----------|----------------------------------------------------------|
 | `packageName`         | `String`              | Yes      | Package name for the generated `ResourceDirectory` class |
 | `resourceDirectories` | `StringList`          | Yes      | Directories to scan for resources                        |
-| `eclude`              | `(String) -> Boolean` | No       | Function to exclude paths (returns `true` to ignore)     |
+| `exclude`              | `(String) -> Boolean` | No       | Function to exclude paths (returns `true` to ignore)     |
 
 ### Example Configuration
 
@@ -147,12 +147,12 @@ Read resource as UTF-8 string. Result is cached in memory.
 val json = resources.asString("data.json")
 ```
 
-##### `asBytes(path: String): ByteString`
+##### `asByteArray(path: String): ByteArray`
 
 Read resource as bytes. Result is cached in memory.
 
 ```kotlin
-val imageData = resources.asBytes("image.png")
+val imageData = resources.asByteArray("image.png")
 ```
 
 ##### `asPath(path: String): Path?`
@@ -249,7 +249,7 @@ object ResourceDirectory : ResourceDirectory {
 
 ### Caching Strategy
 
-- **In-Memory**: Decoded `ByteString` and `String` values are cached per `Resource` instance
+- **In-Memory**: Decoded `ByteArray` and `String` values are cached per `Resource` instance
 - **Disk Cache**: Large resources can be cached in the system temp directory
 - **Validation**: Cached files are validated by hash to ensure integrity
 
@@ -267,7 +267,7 @@ val filePath = resources.asPath("important.dat")
 
 1. **Use `write()` for large files** instead of `asBytes()` to avoid loading into memory
 2. **Set appropriate `inMemoryCutoff`** based on your application's memory constraints
-3. **Use `OptimizationStrategy.Memory`** for resources >6MB
+3. **Use `OptimizationStrategy.Memory`** for resources >4MB
 4. **Cache `Resources` instance** - don't create multiple instances of the same `ResourceDirectory`
 
 ## Troubleshooting

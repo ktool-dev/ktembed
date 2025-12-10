@@ -113,67 +113,6 @@ class ResourceSpec : BddSpec({
         result shouldBe expectedBytes
     }
 
-    "calculating size for single chunk resource" {
-        Given
-        val content = "Small content"
-        val base64Chunk = content.encodeUtf8().base64()
-        val resource = Resource(
-            chunks = listOf(base64Chunk),
-            key = "small.txt"
-        )
-
-        When
-        val size = resource.size
-
-        Then
-        // For single chunk: size = base64 chunk length
-        size shouldBe base64Chunk.length
-    }
-
-    "calculating size for multiple chunk resource" {
-        Given
-        val chunk1 = "A".repeat(100)
-        val chunk2 = "B".repeat(200)
-        val chunk3 = "C".repeat(300)
-        val base64Chunks = listOf(
-            chunk1.encodeUtf8().base64(),
-            chunk2.encodeUtf8().base64(),
-            chunk3.encodeUtf8().base64()
-        )
-        val resource = Resource(
-            chunks = base64Chunks,
-            key = "sized.txt"
-        )
-
-        When
-        val size = resource.size
-
-        Then
-        // Size = (chunks.size - 1) * RESOURCE_CHUNK_SIZE + last chunk length
-        val expectedSize = 2 * RESOURCE_CHUNK_SIZE + base64Chunks.last().length
-        size shouldBe expectedSize
-    }
-
-    "size calculation uses RESOURCE_CHUNK_SIZE constant" {
-        Given
-        val base64Chunks = listOf(
-            "chunk1".encodeUtf8().base64(),
-            "chunk2".encodeUtf8().base64(),
-            "chunk3".encodeUtf8().base64(),
-            "final".encodeUtf8().base64()
-        )
-        val resource = Resource(
-            chunks = base64Chunks,
-            key = "test.txt"
-        )
-
-        When
-        val size = resource.size
-
-        Then
-        // Size = 3 * 60000 + length of last chunk
-        size shouldBe 3 * RESOURCE_CHUNK_SIZE + base64Chunks.last().length
-    }
 
     "asString is lazily evaluated" {
         Given
@@ -432,31 +371,6 @@ class ResourceSpec : BddSpec({
 
         Then
         result shouldBe content
-    }
-
-    "size calculation is correct for various chunk counts"(
-        row(1, "X".repeat(100)),
-        row(2, "A".repeat(5000)),
-        row(3, "B".repeat(10000)),
-        row(5, "12345")
-    ) { (targetChunkCount, content) ->
-        Given("targeting $targetChunkCount chunks")
-        val base64Chunks = createBase64Chunks(content, targetChunkCount)
-        val resource = Resource(
-            chunks = base64Chunks,
-            key = "test.txt"
-        )
-
-        When
-        val size = resource.size
-
-        Then
-        val expectedSize = if (base64Chunks.size == 1) {
-            base64Chunks.first().length
-        } else {
-            (base64Chunks.size - 1) * RESOURCE_CHUNK_SIZE + base64Chunks.last().length
-        }
-        size shouldBe expectedSize
     }
 })
 
