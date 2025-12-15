@@ -21,6 +21,7 @@ class ResourceDirectoryGeneratorSpec : BddSpec({
         output shouldContain "import dev.ktool.embed.ResourceDirectory"
         output shouldContain "object ResourceDirectory : ResourceDirectory"
         output shouldContain """override val key: String = "com-example-test""""
+        output shouldContain """override val allPaths: List<String> = resources.keys.toList()"""
         output shouldContain "private val resources: Map<String, Resource> = mapOf("
         output shouldContain ")"
     }

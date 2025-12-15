@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.ktml)
-    //alias(libs.plugins.ktembed)
+    alias(libs.plugins.ktembed)
 }
 
 kotlin {
@@ -43,14 +43,14 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.ktml.runtime)
             implementation(libs.ktml.ktor)
-            implementation(project(":runtime"))
+            implementation(libs.ktembed.runtime)
             implementation(libs.ktor.server.core)
             implementation(libs.ktor.server.cio)
         }
     }
 }
 
-//ktembed {
-//    packageName = "dev.ktool.embed.example.ktor"
-//    resourceDirectories = listOf("src/commonMain/resources/static")
-//}
+ktembed {
+    packageName = "dev.ktool.embed.example.ktor"
+    resourceDirectories = listOf("src/commonMain/resources/static")
+}

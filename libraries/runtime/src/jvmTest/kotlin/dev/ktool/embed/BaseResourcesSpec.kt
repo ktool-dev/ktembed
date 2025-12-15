@@ -312,7 +312,7 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val path = resources.asPath("file.txt")
+        val path = resources.asPath("file.txt")?.toPath()
 
         Then
         path shouldBe "/tmp/test-dir/file.txt".toPath()
@@ -335,7 +335,7 @@ class BaseResourcesSpec : BddSpec({
         Then
         path1 shouldBe path2
         path2 shouldBe path3
-        path1 shouldBe "/tmp/test-dir/file.txt".toPath()
+        path1 shouldBe "/tmp/test-dir/file.txt"
     }
 
     "getting resource as path validates existing file" {
@@ -354,7 +354,7 @@ class BaseResourcesSpec : BddSpec({
         }
 
         When
-        val path = resources.asPath("file.txt")
+        val path = resources.asPath("file.txt")?.toPath()
 
         Then("Should detect mismatch and overwrite with correct content")
         path shouldBe cachePath
@@ -369,11 +369,11 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         And("First call to create and validate the file")
-        val path1 = resources.asPath("file.txt")
+        val path1 = resources.asPath("file.txt")?.toPath()
         val metadata1 = fileSystem.metadata(path1!!)
 
         When("Second call should reuse validated file without rewriting")
-        val path2 = resources.asPath("file.txt")
+        val path2 = resources.asPath("file.txt")?.toPath()
         val metadata2 = fileSystem.metadata(path2!!)
 
         Then("File timestamps should be identical (not rewritten)")
@@ -399,7 +399,7 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val path = resources.asPath("multi.txt")
+        val path = resources.asPath("multi.txt")?.toPath()
 
         Then
         path shouldBe "/tmp/test-dir/multi.txt".toPath()
@@ -419,8 +419,8 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val path1 = resources.asPath("file1.txt")
-        val path2 = resources.asPath("file2.txt")
+        val path1 = resources.asPath("file1.txt")?.toPath()
+        val path2 = resources.asPath("file2.txt")?.toPath()
 
         Then
         path1 shouldBe "/tmp/test-dir/file1.txt".toPath()
@@ -437,7 +437,7 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val path = resources.asPath("large.bin")
+        val path = resources.asPath("large.bin")?.toPath()
 
         Then
         path shouldBe "/tmp/test-dir/large.bin".toPath()
@@ -453,7 +453,7 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val path = resources.asPath("unicode.txt")
+        val path = resources.asPath("unicode.txt")?.toPath()
 
         Then
         path shouldBe "/tmp/test-dir/unicode.txt".toPath()
@@ -468,7 +468,7 @@ class BaseResourcesSpec : BddSpec({
         val resources = createResourcesWithFakeFileSystem(resourceDir, fileSystem)
 
         When
-        val path = resources.asPath("empty.txt")
+        val path = resources.asPath("empty.txt")?.toPath()
 
         Then
         path shouldBe "/tmp/test-dir/empty.txt".toPath()
@@ -500,8 +500,8 @@ class BaseResourcesSpec : BddSpec({
         val resources2 = createResourcesWithFakeFileSystem(resourceDir2, fileSystem)
 
         When
-        val path1 = resources1.asPath("file.txt")
-        val path2 = resources2.asPath("file.txt")
+        val path1 = resources1.asPath("file.txt")?.toPath()
+        val path2 = resources2.asPath("file.txt")?.toPath()
 
         Then
         path1 shouldBe "/tmp/dir1/file.txt".toPath()
@@ -529,8 +529,8 @@ private fun createResourcesWithFakeFileSystem(
     resourceDir: ResourceDirectory,
     fileSystem: FakeFileSystem,
     inMemoryCutoff: Long = IN_MEMORY_CUT_OFF
-): BaseResources {
-    return BaseResources(
+): Resources {
+    return Resources(
         resourceDirectory = resourceDir,
         inMemoryCutoff = inMemoryCutoff,
         fileSystem = fileSystem,
@@ -546,4 +546,5 @@ private class TestResourceDirectory(
     private val resources: Map<String, Resource>
 ) : ResourceDirectory {
     override fun get(path: String): Resource? = resources[path]
+    override val allPaths: List<String> = resources.keys.toList()
 }

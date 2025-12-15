@@ -43,6 +43,11 @@ class ResourceDirectoryGenerator(private val fileSystem: FileSystem = FileSystem
                 }
             }
 
+            +Property(name = "allPaths", type = Type("List<String>")) {
+                +Modifier.Override
+                initializer = ExpressionBody("resources.keys.toList()")
+            }
+
             +Function("get", returnType = Type("Resource?")) {
                 +Modifier.Override
                 +Modifier.Operator

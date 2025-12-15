@@ -17,4 +17,6 @@ interface ResourceDirectory {
      * A unique identifier for this directory.
      */
     val key: String
+
+    val allPaths: List<String>
 }

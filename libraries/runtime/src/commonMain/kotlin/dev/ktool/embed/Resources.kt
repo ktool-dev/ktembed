@@ -12,11 +12,11 @@ import okio.*
  * @property cacheDirectory The directory used for caching resources on the file system.
  * @property fileSystem The file system instance used for file operations, this should only be set for testing.
  */
-open class BaseResources(
+class Resources(
     private val resourceDirectory: ResourceDirectory,
-    private val inMemoryCutoff: Long,
-    private val cacheDirectory: Path?,
-    private val fileSystem: FileSystem,
+    private val inMemoryCutoff: Long = IN_MEMORY_CUT_OFF,
+    private val cacheDirectory: Path? = getTempDirectory(),
+    private val fileSystem: FileSystem? = getFileSystem(),
 ) {
     private val validatedFiles = mutableSetOf<Path>()
 
@@ -27,6 +27,15 @@ open class BaseResources(
      * @return `true` if the resource exists, `false` otherwise.
      */
     fun exists(path: String) = resourceDirectory[path] != null
+
+    /**
+     * Provides a list of all available resource paths within the resource directory.
+     *
+     * This property retrieves the entire set of paths that can be used to access resources
+     * in the associated `ResourceDirectory`. Each path corresponds to a unique resource
+     * available within the directory.
+     */
+    val allPaths: List<String> = resourceDirectory.allPaths
 
     /**
      * Converts the resource located at the given path to its string representation. The first time this is called, it
@@ -57,7 +66,7 @@ open class BaseResources(
      * @param path The relative path of the resource that needs to be converted into a cache file path.
      * @return The cached file path if the resource could be processed, otherwise `null`.
      */
-    fun asPath(path: String) = ensureFile(resourceDirectory.key, path.toResource())
+    fun asPath(path: String): String? = ensureFile(resourceDirectory.key, path.toResource())?.toString()
 
     /**
      * Writes the resource located at the specified path to the provided output. This will throw an exception if the
@@ -87,6 +96,8 @@ open class BaseResources(
     }
 
     private fun write(resource: Resource, output: Sink, optimizationStrategy: OptimizationStrategy) {
+        require(fileSystem != null) { "You cannot write to a file on a platform that doesn't have a FileSystem" }
+
         output.buffer().use { buffer ->
             if (optimizationStrategy == OptimizationStrategy.Speed) {
                 buffer.write(resource.asByteArray)
@@ -104,6 +115,8 @@ open class BaseResources(
     }
 
     private fun ensureFile(resourceDirKey: String, resource: Resource): Path? {
+        if (fileSystem == null) return null
+
         return try {
             val cacheDirectory = cacheDirectory(resourceDirKey) ?: return null
             val filePath = cacheDirectory / resource.key
@@ -135,7 +148,8 @@ open class BaseResources(
 
     private fun String.toResource() = resourceDirectory[this] ?: error("Resource not found: $this")
 
-    internal fun Path.exists() = fileSystem.exists(this)
-    internal fun Path.createDirs() = fileSystem.createDirectories(this)
-    internal fun <T> Path.write(action: BufferedSink.() -> T) = fileSystem.write(this, false, action)
+    internal fun Path.exists() = fileSystem?.exists(this) ?: error("FileSystem not supported")
+    internal fun Path.createDirs() = fileSystem?.createDirectories(this) ?: error("FileSystem not supported")
+    internal fun <T> Path.write(action: BufferedSink.() -> T) =
+        fileSystem?.write(this, false, action) ?: error("FileSystem not supported")
 }

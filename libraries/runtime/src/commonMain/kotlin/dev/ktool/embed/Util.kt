@@ -10,6 +10,9 @@ import okio.ByteString.Companion.toByteString
 const val RESOURCE_CHUNK_SIZE = 40_000L
 internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
 
+expect fun getFileSystem(): FileSystem?
+expect fun getTempDirectory(): Path?
+
 /**
  * Computes a SHA-256 hash from decoded Base64 chunks.
  * This decodes each chunk and processes it individually.

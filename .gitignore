@@ -45,4 +45,5 @@ bin/
 .DS_Store
 
 **/resources/output
+history/
 .beads

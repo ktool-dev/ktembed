@@ -7,27 +7,10 @@ import okio.Path
 import okio.Path.Companion.toPath
 import platform.posix.getenv
 
-/**
- * A class that provides functionality to handle resources stored in a ResourceDirectory. Resources can be accessed by a
- * path and read as strings or bytes, and written to an output sink. The class also supports caching and optimization
- * strategies for resource handling.
- *
- * @property resourceDirectory The ResourceDirectory from which the resources will be accessed.
- * @property inMemoryCutoff The size limit in bytes for caching resources in memory when calling the `write` function
- * with no OptimizationStrategy. The default is 6MB.
- */
-class Resources(
-    private val resourceDirectory: ResourceDirectory,
-    private val inMemoryCutoff: Long = IN_MEMORY_CUT_OFF,
-) : BaseResources(
-    resourceDirectory,
-    inMemoryCutoff,
-    getSystemTempDirectory(),
-    FileSystem.SYSTEM
-)
+actual fun getFileSystem(): FileSystem? = FileSystem.SYSTEM
 
 @OptIn(ExperimentalForeignApi::class)
-private fun getSystemTempDirectory(): Path {
+actual fun getTempDirectory(): Path? {
     // Try TMPDIR first (standard on Unix-like systems including macOS)
     val tmpDir = getenv("TMPDIR")?.toKString()
     if (tmpDir != null && tmpDir.isNotEmpty()) {
