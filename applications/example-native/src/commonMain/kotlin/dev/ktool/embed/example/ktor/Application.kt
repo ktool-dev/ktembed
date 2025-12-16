@@ -3,7 +3,6 @@ package dev.ktool.embed.example.ktor
 import dev.ktml.ktor.KtmlPlugin
 import dev.ktml.ktor.respondKtml
 import dev.ktml.templates.KtmlRegistry
-import dev.ktool.embed.Resources
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -12,7 +11,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
 
-val resources = Resources(ResourceDirectory)
+val resources = ResourceDirectory.toResources()
 
 fun main() {
     embeddedServer(CIO, port = 8080, host = "0.0.0.0") {

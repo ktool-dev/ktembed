@@ -43,7 +43,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.ktml.runtime)
             implementation(libs.ktml.ktor)
-            implementation(libs.ktembed.runtime)
+            implementation(project(":runtime"))
             implementation(libs.ktor.server.core)
             implementation(libs.ktor.server.cio)
         }

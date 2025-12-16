@@ -39,10 +39,9 @@ ktembed {
 
 ```kotlin
 import com.example.resources.ResourceDirectory
-import dev.ktool.embed.Resources
 
 // Initialize the Resources instance
-val resources = Resources(ResourceDirectory)
+val resources = ResourceDirectory.toResources()
 
 // Read as string
 val config = resources.asString("config/config.json")
@@ -78,11 +77,11 @@ pluginManagement {
 
 // In build.gradle.kts
 plugins {
-    id("dev.ktool.ktembed") version "0.0.1"
+    id("dev.ktool.ktembed") version "0.1.1"
 }
 
 dependencies {
-    implementation("dev.ktool:ktembed-runtime:0.0.1")
+    implementation("dev.ktool:ktembed-runtime:0.1.1")
 }
 ```
 
@@ -96,7 +95,7 @@ The `ktembed` extension provides the following configuration options:
 |-----------------------|-----------------------|----------|----------------------------------------------------------|
 | `packageName`         | `String`              | Yes      | Package name for the generated `ResourceDirectory` class |
 | `resourceDirectories` | `StringList`          | Yes      | Directories to scan for resources                        |
-| `exclude`              | `(String) -> Boolean` | No       | Function to exclude paths (returns `true` to ignore)     |
+| `exclude`             | `(String) -> Boolean` | No       | Function to exclude paths (returns `true` to ignore)     |
 
 ### Example Configuration
 
@@ -208,31 +207,6 @@ enum class OptimizationStrategy {
 - `Speed`: Small resources, frequent access, plenty of memory
 - `Memory`: Large resources (>6MB), infrequent access, memory-constrained environments
 
-### Generated Code
-
-The plugin generates a `ResourceDirectory` class in your specified package:
-
-```kotlin
-package com.example.resources
-
-import dev.ktool.embed.Resource
-import dev.ktool.embed.ResourceDirectory
-
-object ResourceDirectory : ResourceDirectory {
-    override val key: String = "com-example-resources"
-
-    private val resources: Map<String, Resource> = mapOf(
-        "config.json" to Resource(
-            "config.json", RESOURCE_1
-        ),
-        "logo.png" to Resource("logo.png", RESOURCE_2),
-        // ... more resources
-    )
-
-    override operator fun get(path: String): Resource? = resources[path]
-}
-```
-
 ## How It Works
 
 1. **Build Time**: The Gradle plugin scans your resource directories and generates Kotlin code with Base64-encoded
@@ -243,7 +217,7 @@ object ResourceDirectory : ResourceDirectory {
 ### Resource Encoding
 
 - Resources are split into chunks (to avoid JVM string literal limits)
-- Each chunk is Base64-encoded
+- Each chunk is Base64-encoded and zipped
 - Chunks are stored as string literals in generated Kotlin code
 - Decoding happens lazily on first access
 
