@@ -109,7 +109,11 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
                             var chunkSize = 0L
 
                             fun writeChunk() {
-                                newLine("""$$$$$"${chunkBuffer.encodeChunk()}",""")
+                                val encoded = chunkBuffer.encodeChunk()
+                                val consecutiveDollars = encoded.maxConsecutiveDollars()
+                                val dollarPrefix =
+                                    if (consecutiveDollars == 0) "" else "$".repeat(consecutiveDollars + 1)
+                                newLine("""$dollarPrefix"$encoded",""")
                                 chunkBuffer.clear()
                                 chunkCount++
                                 chunkSize = 0L
@@ -172,3 +176,5 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
         return this
     }
 }
+
+private fun String.maxConsecutiveDollars(): Int = Regex("\\$+").findAll(this).maxOfOrNull { it.value.length } ?: 0
