@@ -8,7 +8,7 @@ import korlibs.io.compression.uncompress
 import okio.*
 import okio.ByteString.Companion.decodeBase64
 
-const val RESOURCE_CHUNK_SIZE = 50_000L
+const val RESOURCE_CHUNK_SIZE = 44_000L
 internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
 
 expect fun getFileSystem(): FileSystem?

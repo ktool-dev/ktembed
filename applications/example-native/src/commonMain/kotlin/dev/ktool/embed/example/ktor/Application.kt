@@ -41,7 +41,7 @@ fun Application.configureRouting() {
                 )
             )
         }
-        get("/static/{path...") {
+        get("/static/{path...}") {
             val path = call.parameters.getAll("path")?.joinToString("/") ?: ""
             val extension = path.substringAfterLast('.', "")
             val contentTypes =
