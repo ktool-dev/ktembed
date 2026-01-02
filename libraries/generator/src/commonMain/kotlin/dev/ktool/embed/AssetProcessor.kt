@@ -109,7 +109,7 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
                             var chunkSize = 0L
 
                             fun writeChunk() {
-                                newLine(""""${chunkBuffer.encodeChunk()}",""")
+                                newLine("""$$"${chunkBuffer.encodeChunk()}",""")
                                 chunkBuffer.clear()
                                 chunkCount++
                                 chunkSize = 0L
