@@ -1,9 +1,15 @@
 # KtEmbed
 
+[![Build](https://github.com/ktool-dev/ktembed/actions/workflows/ci.yaml/badge.svg)](https://github.com/ktool-dev/ktembed/actions/workflows/ci.yaml)
+[![Maven Central](https://img.shields.io/maven-central/v/dev.ktool/ktembed-runtime)](https://central.sonatype.com/artifact/dev.ktml/ktembed-runtime)
+[![GitHub License](https://img.shields.io/github/license/ktool-dev/ktembed)](https://github.com/ktool-dev/ktembed/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/ktool-dev/ktembed)](https://github.com/ktool-dev/ktembed/issues)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.2.21-blue.svg?logo=kotlin)](http://kotlinlang.org)
+
 > Embed static resources directly into your Kotlin binaries
 
 KtEmbed is a Kotlin Multiplatform library and Gradle plugin that lets you embed static resources (text, JSON, HTML,
-images, etc.) directly into your compiled applications. Resources are encoded as Base64 strings at compile time and can
+images, etc.) directly into your compiled applications. Resources are encoded as Z85 strings at compile time and can
 be accessed efficiently at runtime with automatic caching and optimization strategies.
 
 ## Features
@@ -209,7 +215,7 @@ enum class OptimizationStrategy {
 
 ## How It Works
 
-1. **Build Time**: The Gradle plugin scans your resource directories and generates Kotlin code with Base64-encoded
+1. **Build Time**: The Gradle plugin scans your resource directories and generates Kotlin code with Z85-encoded
    resources
 2. **Compile Time**: Resources are compiled directly into your application binary
 3. **Runtime**: Resources accessed through `Resources` class and are lazily decoded and cached as needed
@@ -217,7 +223,7 @@ enum class OptimizationStrategy {
 ### Resource Encoding
 
 - Resources are split into chunks (to avoid JVM string literal limits)
-- Each chunk is Base64-encoded and zipped
+- Each chunk is zipped and Z85-encoded
 - Chunks are stored as string literals in generated Kotlin code
 - Decoding happens lazily on first access
 

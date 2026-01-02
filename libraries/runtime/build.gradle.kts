@@ -48,6 +48,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.z85)
             implementation(libs.okio)
             implementation(libs.korge.compression)
         }

@@ -1,13 +1,14 @@
 package dev.ktool.embed
 
+import dev.ktool.z85.decodeZ85
+import dev.ktool.z85.encodeZ85
 import korlibs.io.compression.compress
 import korlibs.io.compression.deflate.ZLib
 import korlibs.io.compression.uncompress
 import okio.*
 import okio.ByteString.Companion.decodeBase64
-import okio.ByteString.Companion.toByteString
 
-const val RESOURCE_CHUNK_SIZE = 40_000L
+const val RESOURCE_CHUNK_SIZE = 50_000L
 internal const val IN_MEMORY_CUT_OFF = RESOURCE_CHUNK_SIZE * 100
 
 expect fun getFileSystem(): FileSystem?
@@ -40,8 +41,8 @@ internal fun computeHash(path: Path, fileSystem: FileSystem): String {
     return hashingSink.hash.hex()
 }
 
-fun String.decodeChunk(): ByteArray = decodeBase64()?.toByteArray()?.uncompress(ZLib) ?: error("Unable to decode chunk")
+fun String.decodeChunk(): ByteArray = decodeZ85().uncompress(ZLib)
 
 fun Buffer.encodeChunk(): String = readByteString().encodeChunk()
 fun ByteString.encodeChunk() = toByteArray().encodeChunk()
-fun ByteArray.encodeChunk() = compress(ZLib).toByteString().base64()
+fun ByteArray.encodeChunk() = compress(ZLib).encodeZ85()

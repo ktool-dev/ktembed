@@ -201,10 +201,10 @@ class AssetProcessorSpec : BddSpec({
         content shouldContain "package my.custom.package"
     }
 
-    "resource chunks are Base64 encoded" {
+    "resource chunks are Z85 encoded" {
         Given
         val assetProcessor = AssetProcessor(fileSystem)
-        val packageName = "test.base64"
+        val packageName = "test.Z85"
         val fileContent = "Hello, World!"
 
         fileSystem.createDirectories(sourceDir)
@@ -214,12 +214,12 @@ class AssetProcessorSpec : BddSpec({
         assetProcessor.process(listOf(sourceDir), packageName, outputDir) { false }
 
         Then
-        val chunksFile = outputDir.resolve("test/base64/ResourceChunks1.kt")
+        val chunksFile = outputDir.resolve("test/Z85/ResourceChunks1.kt")
         val content = fileSystem.read(chunksFile) { readUtf8() }
 
         content shouldContain "RESOURCE_1"
         content shouldContain "listOf("
-        // Base64 encoded content should be present
+        // Z85 encoded content should be present
         content shouldContain "\""
     }
 
@@ -461,7 +461,7 @@ class AssetProcessorSpec : BddSpec({
         content shouldContain """"file_2.txt""""
     }
 
-    "decoded Base64 chunks match original file content" {
+    "decoded Z85 chunks match original file content" {
         Given
         val assetProcessor = AssetProcessor(fileSystem)
         val packageName = "test.decode"
@@ -477,12 +477,12 @@ class AssetProcessorSpec : BddSpec({
         val chunksFile = outputDir.resolve("test/decode/ResourceChunks1.kt")
         val generatedCode = fileSystem.read(chunksFile) { readUtf8() }
 
-        val base64Chunks = extractBase64Chunks(generatedCode)
-        val decodedContent = decodeChunks(base64Chunks)
+        val z85Chunks = extractZ85Chunks(generatedCode)
+        val decodedContent = decodeChunks(z85Chunks)
         decodedContent shouldBe originalContent
     }
 
-    "decoded Base64 chunks match original file content with multiple chunks" {
+    "decoded Z85 chunks match original file content with multiple chunks" {
         Given
         val assetProcessor = AssetProcessor(fileSystem)
         val packageName = "test.multichunk"
@@ -502,12 +502,12 @@ class AssetProcessorSpec : BddSpec({
         val chunksFile = outputDir.resolve("test/multichunk/ResourceChunks1.kt")
         val generatedCode = fileSystem.read(chunksFile) { readUtf8() }
 
-        val base64Chunks = extractBase64Chunks(generatedCode)
-        val decodedContent = decodeChunks(base64Chunks)
+        val z85Chunks = extractZ85Chunks(generatedCode)
+        val decodedContent = decodeChunks(z85Chunks)
         decodedContent shouldBe largeContent
     }
 
-    "decoded Base64 chunks match binary file content" {
+    "decoded Z85 chunks match binary file content" {
         Given
         val assetProcessor = AssetProcessor(fileSystem)
         val packageName = "test.binary.decode"
@@ -528,13 +528,13 @@ class AssetProcessorSpec : BddSpec({
         val chunksFile = outputDir.resolve("test/binary/decode/ResourceChunks1.kt")
         val generatedCode = fileSystem.read(chunksFile) { readUtf8() }
 
-        val base64Chunks = extractBase64Chunks(generatedCode)
-        val decodedBytes = decodeChunksToBytes(base64Chunks)
+        val z85Chunks = extractZ85Chunks(generatedCode)
+        val decodedBytes = decodeChunksToBytes(z85Chunks)
 
         decodedBytes shouldBe binaryData
     }
 
-    "decoded Base64 chunks match unicode file content" {
+    "decoded Z85 chunks match unicode file content" {
         Given
         val assetProcessor = AssetProcessor(fileSystem)
         val packageName = "test.unicode.decode"
@@ -557,12 +557,12 @@ class AssetProcessorSpec : BddSpec({
         val chunksFile = outputDir.resolve("test/unicode/decode/ResourceChunks1.kt")
         val generatedCode = fileSystem.read(chunksFile) { readUtf8() }
 
-        val base64Chunks = extractBase64Chunks(generatedCode)
-        val decodedContent = decodeChunks(base64Chunks)
+        val z85Chunks = extractZ85Chunks(generatedCode)
+        val decodedContent = decodeChunks(z85Chunks)
         decodedContent shouldBe unicodeContent
     }
 
-    "decoded Base64 chunks match very large file content" {
+    "decoded Z85 chunks match very large file content" {
         Given
         val assetProcessor = AssetProcessor(fileSystem)
         val packageName = "test.verylarge"
@@ -578,8 +578,8 @@ class AssetProcessorSpec : BddSpec({
         val chunksFile = outputDir.resolve("test/verylarge/ResourceChunks1.kt")
         val generatedCode = fileSystem.read(chunksFile) { readUtf8() }
 
-        val base64Chunks = extractBase64Chunks(generatedCode)
-        val decodedContent = decodeChunks(base64Chunks)
+        val z85Chunks = extractZ85Chunks(generatedCode)
+        val decodedContent = decodeChunks(z85Chunks)
 
         decodedContent shouldBe largeContent
         decodedContent.length shouldBe 150_000
@@ -604,9 +604,9 @@ class AssetProcessorSpec : BddSpec({
     }
 })
 
-private fun extractBase64Chunks(generatedCode: String): List<String> {
+private fun extractZ85Chunks(generatedCode: String): List<String> {
     val chunks = mutableListOf<String>()
-    val regex = """"([A-Za-z0-9+/=]+)",""".toRegex()
+    val regex = """"(.+)",""".toRegex()
 
     regex.findAll(generatedCode).forEach { matchResult ->
         chunks.add(matchResult.groupValues[1])
@@ -615,12 +615,12 @@ private fun extractBase64Chunks(generatedCode: String): List<String> {
     return chunks
 }
 
-private fun decodeChunks(base64Chunks: List<String>): String {
-    return decodeChunksToBytes(base64Chunks).toByteString().utf8()
+private fun decodeChunks(z85Chunks: List<String>): String {
+    return decodeChunksToBytes(z85Chunks).toByteString().utf8()
 }
 
-private fun decodeChunksToBytes(base64Chunks: List<String>): ByteArray {
-    return base64Chunks
+private fun decodeChunksToBytes(z85Chunks: List<String>): ByteArray {
+    return z85Chunks
         .map { it.decodeChunk() }
         .reduce { acc, bytes -> acc + bytes }
 }
