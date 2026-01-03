@@ -3,6 +3,7 @@ package dev.ktool.embed
 import dev.ktool.gen.types.ExpressionBody
 import dev.ktool.gen.types.KotlinFile
 import dev.ktool.gen.types.Property
+import dev.ktool.z85.z85AsKotlinStringLiteral
 import okio.Buffer
 import okio.FileSystem
 import okio.Path
@@ -109,11 +110,7 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
                             var chunkSize = 0L
 
                             fun writeChunk() {
-                                val encoded = chunkBuffer.encodeChunk()
-                                val consecutiveDollars = encoded.maxConsecutiveDollars()
-                                val dollarPrefix =
-                                    if (consecutiveDollars == 0) "" else "$".repeat(consecutiveDollars + 1)
-                                newLine("""$dollarPrefix"$encoded",""")
+                                newLine("""${chunkBuffer.encodeChunk().z85AsKotlinStringLiteral()},""")
                                 chunkBuffer.clear()
                                 chunkCount++
                                 chunkSize = 0L
@@ -176,5 +173,3 @@ class AssetProcessor(private val fileSystem: FileSystem = FileSystem.SYSTEM) {
         return this
     }
 }
-
-private fun String.maxConsecutiveDollars(): Int = Regex("\\$+").findAll(this).maxOfOrNull { it.value.length } ?: 0
